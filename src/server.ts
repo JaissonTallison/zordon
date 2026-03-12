@@ -1,11 +1,13 @@
 import express from "express"
 import { productRoutes } from "./modules/products/routes/product.routes"
+import { saleRoutes } from "./modules/sales/routes/sale.routes"
 
 const app = express()
 
 app.use(express.json())
 
 app.use(productRoutes)
+app.use(saleRoutes)
 
 app.get("/", (req, res) => {
   return res.json({
