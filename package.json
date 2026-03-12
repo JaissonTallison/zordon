@@ -1,7 +1,6 @@
-
 {
   "name": "zordon",
- "ersion": "1.0.0",
+  "ersion": "1.0.0",
   "description": "**ZORDON** é um sistema de análise de vendas e geração de insights desenvolvido para auxiliar gestores e pequenos negócios na tomada de decisões estratégicas no setor comercial.",
   "main": "index.js",
   "scripts": {
@@ -23,7 +22,9 @@
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
