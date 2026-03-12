@@ -8,7 +8,7 @@ export class AnalyzeSalesService {
     const sales = saleRepository.list()
     const products = productRepository.list()
 
-    const result = products.map(product => {
+    const insights = products.map(product => {
 
       const productSales = sales.filter(
         sale => sale.productId === product.id
@@ -19,16 +19,33 @@ export class AnalyzeSalesService {
         0
       )
 
+      let insight = "Venda dentro do padrão."
+
+      if (totalSold === 0) {
+        insight = "Produto sem vendas. Considere promoção ou desconto."
+      } 
+      else if (totalSold < 3) {
+        insight = "Produto com baixa saída."
+      } 
+      else if (totalSold >= 5) {
+        insight = "Produto com alta demanda. Considere aumentar o estoque."
+      }
+
+      if (product.stock < product.minStock) {
+        insight += " ⚠ Estoque abaixo do mínimo."
+      }
+
       return {
         productId: product.id,
-        name: product.name,
+        product: product.name,
         totalSold,
-        stock: product.stock
+        stock: product.stock,
+        insight
       }
 
     })
 
-    return result
+    return insights
   }
 
 }
