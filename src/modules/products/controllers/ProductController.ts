@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
 import { CreateProductService } from "../services/CreateProductService"
+import { ListProductsService } from "../services/ListProductsService"
 
 export class ProductController {
 
@@ -18,6 +19,15 @@ export class ProductController {
     })
 
     return response.json(product)
+  }
+
+  list(request: Request, response: Response) {
+
+    const listProductsService = new ListProductsService()
+
+    const products = listProductsService.execute()
+
+    return response.json(products)
   }
 
 }
