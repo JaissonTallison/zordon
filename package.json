@@ -1,0 +1,34 @@
+
+{
+  "name": "zordon",
+ "ersion": "1.0.0",
+  "description": "**ZORDON** é um sistema de análise de vendas e geração de insights desenvolvido para auxiliar gestores e pequenos negócios na tomada de decisões estratégicas no setor comercial.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JaissonTallison/zordon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/JaissonTallison/zordon/issues"
+  },
+  "homepage": "https://github.com/JaissonTallison/zordon#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
+  }
+}
