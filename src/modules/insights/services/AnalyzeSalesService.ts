@@ -15,7 +15,7 @@ export class AnalyzeSalesService {
       sale => sale.createdAt >= sevenDaysAgo
     )
 
-    const analysis = products.map(product => {
+    const insights = products.map(product => {
 
       const productSales = recentSales.filter(
         sale => sale.productId === product.id
@@ -26,34 +26,34 @@ export class AnalyzeSalesService {
         0
       )
 
+      let recommendation = "Venda dentro do padrão."
+
+      if (totalSold === 0) {
+        recommendation = "Produto sem vendas. Considere promoção ou desconto."
+      }
+      else if (totalSold < 3) {
+        recommendation = "Produto com baixa saída. Avalie promoção."
+      }
+      else if (totalSold >= 5) {
+        recommendation = "Alta demanda. Considere aumentar o estoque."
+      }
+
+      if (product.stock < product.minStock) {
+        recommendation += " ⚠ Estoque abaixo do mínimo."
+      }
+
       return {
-        productId: product.id,
         product: product.name,
         totalSold,
         stock: product.stock,
-        minStock: product.minStock
+        recommendation
       }
 
     })
 
-    const topSelling = analysis.filter(item => item.totalSold >= 5)
-
-    const lowSales = analysis.filter(
-      item => item.totalSold > 0 && item.totalSold < 5
-    )
-
-    const noSales = analysis.filter(item => item.totalSold === 0)
-
-    const lowStock = analysis.filter(
-      item => item.stock < item.minStock
-    )
-
     return {
       period: "Last 7 days",
-      topSelling,
-      lowSales,
-      noSales,
-      lowStock
+      insights
     }
 
   }
