@@ -8,9 +8,16 @@ export class AnalyzeSalesService {
     const sales = saleRepository.list()
     const products = productRepository.list()
 
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+    const recentSales = sales.filter(
+      sale => sale.createdAt >= sevenDaysAgo
+    )
+
     const analysis = products.map(product => {
 
-      const productSales = sales.filter(
+      const productSales = recentSales.filter(
         sale => sale.productId === product.id
       )
 
@@ -42,6 +49,7 @@ export class AnalyzeSalesService {
     )
 
     return {
+      period: "Last 7 days",
       topSelling,
       lowSales,
       noSales,
