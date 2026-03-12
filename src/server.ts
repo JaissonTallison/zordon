@@ -2,6 +2,7 @@ import express from "express"
 import { productRoutes } from "./modules/products/routes/product.routes"
 import { saleRoutes } from "./modules/sales/routes/sale.routes"
 import { insightsRoutes } from "./modules/insights/insights.routes"
+import { dashboardRoutes } from "./modules/dashboard/routes/dashboard.routes"
 
 const app = express()
 
@@ -10,6 +11,7 @@ app.use(express.json())
 app.use(productRoutes)
 app.use(saleRoutes)
 app.use(insightsRoutes)
+app.use(dashboardRoutes)
 
 app.get("/", (req, res) => {
   return res.json({
