@@ -23,7 +23,8 @@ export class AnalyzeSalesService {
         productId: product.id,
         product: product.name,
         totalSold,
-        stock: product.stock
+        stock: product.stock,
+        minStock: product.minStock
       }
 
     })
@@ -36,10 +37,15 @@ export class AnalyzeSalesService {
 
     const noSales = analysis.filter(item => item.totalSold === 0)
 
+    const lowStock = analysis.filter(
+      item => item.stock < item.minStock
+    )
+
     return {
       topSelling,
       lowSales,
-      noSales
+      noSales,
+      lowStock
     }
 
   }
