@@ -1,50 +1,17 @@
-import { productRepository } from "../../products/repositories/ProductRepository"
-import { saleRepository } from "../../sales/repositories/SaleRepository"
+import { pool } from "../../../database/db"
 
-export class GetDashboardService {
+export class DashboardService {
 
-  execute() {
+  async execute() {
 
-    const products = productRepository.list()
-    const sales = saleRepository.list()
-
-    const totalProducts = products.length
-
-    const totalSales = sales.length
-
-    const totalRevenue = sales.reduce(
-      (sum, sale) => sum + sale.totalValue,
-      0
-    )
-
-    const productSalesMap: Record<string, number> = {}
-
-    sales.forEach(sale => {
-      productSalesMap[sale.productId] =
-        (productSalesMap[sale.productId] || 0) + sale.quantity
-    })
-
-    let topProduct = null
-    let maxSales = 0
-
-    for (const product of products) {
-
-      const sold = productSalesMap[product.id] || 0
-
-      if (sold > maxSales) {
-        maxSales = sold
-        topProduct = product.name
-      }
-
-    }
+    const products = await pool.query(`SELECT COUNT(*) FROM products`)
+    const sales = await pool.query(`SELECT COUNT(*) FROM sales`)
+    const revenue = await pool.query(`SELECT SUM(total_value) FROM sales`)
 
     return {
-      totalProducts,
-      totalSales,
-      totalRevenue,
-      topProduct
+      totalProducts: products.rows[0].count,
+      totalSales: sales.rows[0].count,
+      totalRevenue: revenue.rows[0].sum
     }
-
   }
-
 }

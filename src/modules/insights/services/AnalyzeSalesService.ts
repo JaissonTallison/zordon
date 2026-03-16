@@ -1,59 +1,43 @@
-import { saleRepository } from "../../sales/repositories/SaleRepository"
-import { productRepository } from "../../products/repositories/ProductRepository"
+import { pool } from "../../../database/db"
 
 export class AnalyzeSalesService {
 
-  execute() {
+  async execute() {
 
-    const sales = saleRepository.list()
-    const products = productRepository.list()
+    const popular = await pool.query(`
+      SELECT p.name, COUNT(s.id) as sales
+      FROM products p
+      LEFT JOIN sales s ON p.id = s.product_id
+      GROUP BY p.name
+      HAVING COUNT(s.id) >= 5
+    `)
 
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    const lowSales = await pool.query(`
+      SELECT p.name, COUNT(s.id) as sales
+      FROM products p
+      LEFT JOIN sales s ON p.id = s.product_id
+      GROUP BY p.name
+      HAVING COUNT(s.id) BETWEEN 1 AND 4
+    `)
 
-    const recentSales = sales.filter(
-      sale => sale.createdAt >= sevenDaysAgo
-    )
+    const noSales = await pool.query(`
+      SELECT p.name
+      FROM products p
+      LEFT JOIN sales s ON p.id = s.product_id
+      WHERE s.id IS NULL
+    `)
 
-    const insights = products.map(product => {
-
-      const productSales = recentSales.filter(
-        sale => sale.productId === product.id
-      )
-
-      const totalSold = productSales.reduce(
-        (sum, sale) => sum + sale.quantity,
-        0
-      )
-
-      let recommendation = "Venda dentro do padrão."
-
-      if (totalSold === 0) {
-        recommendation = "Produto sem vendas. Considere promoção ou desconto."
-      }
-      else if (totalSold < 3) {
-        recommendation = "Produto com baixa saída. Avalie promoção."
-      }
-      else if (totalSold >= 5) {
-        recommendation = "Alta demanda. Considere aumentar o estoque."
-      }
-
-      if (product.stock < product.minStock) {
-        recommendation += " ⚠ Estoque abaixo do mínimo."
-      }
-
-      return {
-        product: product.name,
-        totalSold,
-        stock: product.stock,
-        recommendation
-      }
-
-    })
+    const lowStock = await pool.query(`
+      SELECT name
+      FROM products
+      WHERE stock < min_stock
+    `)
 
     return {
-      period: "Last 7 days",
-      insights
+      popularProducts: popular.rows,
+      lowSalesProducts: lowSales.rows,
+      productsWithoutSales: noSales.rows,
+      lowStockProducts: lowStock.rows
     }
 
   }

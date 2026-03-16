@@ -1,29 +1,18 @@
-import { Product } from "../entities/Product"
-import { productRepository } from "../repositories/ProductRepository"
-
-interface CreateProductRequest {
-  name: string
-  category: string
-  price: number
-  stock: number
-  minStock: number
-}
+import { pool } from "../../../database/db"
 
 export class CreateProductService {
 
-  execute({ name, category, price, stock, minStock }: CreateProductRequest): Product {
+  async execute({ name, category, price, stock, minStock }: any) {
 
-    const product: Product = {
-      id: String(Date.now()),
-      name,
-      category,
-      price,
-      stock,
-      minStock,
-      createdAt: new Date()
-    }
+    const result = await pool.query(
+      `
+      INSERT INTO products (name, category, price, stock, min_stock)
+      VALUES ($1,$2,$3,$4,$5)
+      RETURNING *
+      `,
+      [name, category, price, stock, minStock]
+    )
 
-    return productRepository.create(product)
+    return result.rows[0]
   }
-
 }

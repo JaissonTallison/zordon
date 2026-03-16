@@ -5,6 +5,8 @@ const saleRoutes = Router()
 
 const saleController = new SaleController()
 
-saleRoutes.post("/sales", saleController.create)
+saleRoutes.get("/sales", (req, res) => {
+  return saleController.list(req, res)
+})
 
 export { saleRoutes }

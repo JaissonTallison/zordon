@@ -4,30 +4,21 @@ import { ListProductsService } from "../services/ListProductsService"
 
 export class ProductController {
 
-  create(request: Request, response: Response) {
+  async create(req: Request, res: Response) {
 
-    const { name, category, price, stock, minStock } = request.body
+    const service = new CreateProductService()
 
-    const createProductService = new CreateProductService()
+    const product = await service.execute(req.body)
 
-    const product = createProductService.execute({
-      name,
-      category,
-      price,
-      stock,
-      minStock
-    })
-
-    return response.json(product)
+    return res.json(product)
   }
 
-  list(request: Request, response: Response) {
+  async list(req: Request, res: Response) {
 
-    const listProductsService = new ListProductsService()
+    const service = new ListProductsService()
 
-    const products = listProductsService.execute()
+    const products = await service.execute()
 
-    return response.json(products)
+    return res.json(products)
   }
-
 }

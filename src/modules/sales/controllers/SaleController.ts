@@ -1,21 +1,16 @@
 import { Request, Response } from "express"
-import { CreateSaleService } from "../services/CreateSaleService"
+import { ListSalesService } from "../services/ListSalesService"
 
 export class SaleController {
 
-  create(request: Request, response: Response) {
+  async list(req: Request, res: Response) {
 
-    const { productId, quantity, unitPrice } = request.body
+    const service = new ListSalesService()
 
-    const createSaleService = new CreateSaleService()
+    const sales = await service.execute()
 
-    const sale = createSaleService.execute({
-      productId,
-      quantity,
-      unitPrice
-    })
+    return res.json(sales)
 
-    return response.json(sale)
   }
 
 }

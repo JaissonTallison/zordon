@@ -1,11 +1,11 @@
 import { Router } from "express"
 import { ProductController } from "../controllers/ProductController"
 
-const productRoutes = Router()
+const router = Router()
 
-const productController = new ProductController()
+const controller = new ProductController()
 
-productRoutes.post("/products", productController.create)
-productRoutes.get("/products", productController.list)
+router.post("/products", controller.create)
+router.get("/products", controller.list)
 
-export { productRoutes }
+export { router as productRoutes }

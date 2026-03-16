@@ -1,11 +1,13 @@
-import { productRepository } from "../repositories/ProductRepository"
-import { Product } from "../entities/Product"
+import { pool } from "../../../database/db"
 
 export class ListProductsService {
 
-  execute(): Product[] {
-    return productRepository.list()
+  async execute() {
+
+    const result = await pool.query(
+      `SELECT * FROM products`
+    )
+
+    return result.rows
   }
-
 }
-
