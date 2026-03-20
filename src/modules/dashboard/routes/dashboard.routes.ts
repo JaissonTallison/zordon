@@ -1,17 +1,15 @@
 import { Router } from "express"
-
-import { GetDashboardService } from "../services/GetDashboardService"
+import { DashboardController } from "../controllers/DashboardController"
+import { authMiddleware } from "../../../middlewares/authMiddleware"
 
 const dashboardRoutes = Router()
 
-dashboardRoutes.get("/dashboard", async (req, res) => {
+const controller = new DashboardController()
 
-  const service = new GetDashboardService()
-
-  const dashboard = await service.execute()
-
-  return res.json(dashboard)
-
-})
+dashboardRoutes.get(
+  "/dashboard",
+  authMiddleware,
+  (req, res) => controller.handle(req, res)
+)
 
 export { dashboardRoutes }

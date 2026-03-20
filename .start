@@ -1,0 +1,59 @@
+#!/bin/bash
+
+echo "Iniciando ZORDON..."
+
+# ===============================
+# BANCO (Docker)
+# ===============================
+echo "Subindo banco..."
+docker start zordon_db 2>/dev/null || docker run -d \
+  --name zordon_db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=zordon \
+  -p 5432:5432 \
+  postgres:15
+
+sleep 2
+
+# ===============================
+# BACKEND (API)
+# ===============================
+echo "Subindo backend..."
+
+cd ~/zordon
+
+npm run dev &
+BACK_PID=$!
+
+sleep 3
+
+# ===============================
+# TESTAR BACKEND
+# ===============================
+echo "Verificando API..."
+
+curl -s http://localhost:3333 > /dev/null
+
+if [ $? -ne 0 ]; then
+  echo "Backend não iniciou corretamente"
+  kill $BACK_PID
+  exit 1
+fi
+
+echo "Backend rodando!"
+
+# ===============================
+# FRONTEND
+# ===============================
+echo "Subindo frontend..."
+
+cd ~/zordon/frontend
+npm run dev &
+
+echo "ZORDON pronto!"
+echo ""
+echo "Frontend: http://localhost:5173"
+echo "Backend:  http://localhost:3333"
+
+wait

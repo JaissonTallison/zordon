@@ -1,12 +1,21 @@
 import { Router } from "express"
 import { SaleController } from "../controllers/SaleController"
+import { authMiddleware } from "../../../middlewares/authMiddleware"
 
 const saleRoutes = Router()
 
-const saleController = new SaleController()
+const controller = new SaleController()
 
-saleRoutes.get("/sales", (req, res) => {
-  return saleController.list(req, res)
-})
+saleRoutes.post(
+  "/sales",
+  authMiddleware,
+  (req, res) => controller.create(req, res)
+)
+
+saleRoutes.get(
+  "/sales",
+  authMiddleware,
+  (req, res) => controller.list(req, res)
+)
 
 export { saleRoutes }

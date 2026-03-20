@@ -1,0 +1,12 @@
+@import "./variables.css";
+
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
+  background: var(--bg-main);
+  color: var(--text-dark);
+}
+
+* {
+  box-sizing: border-box;
+}

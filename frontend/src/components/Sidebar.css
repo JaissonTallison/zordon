@@ -1,0 +1,46 @@
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background: #1e1e1e;
+  color: white;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar h2 {
+  font-size: 20px;
+  margin-bottom: 30px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu button {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  padding: 12px;
+  text-align: left;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.menu button:hover {
+  background: #2c2c2c;
+  color: white;
+}
+
+.logout {
+  background: #ef4444;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+}
