@@ -1,0 +1,2 @@
+ALTER TABLE resultados
+ADD COLUMN user_id INTEGER;

@@ -4,7 +4,7 @@ import { analisarProdutoAltaVenda } from "./rules/produtoAltaVenda.rule.js";
 
 import { salvarResultados } from "../repositories/result.repository.js";
 
-export function executarMotor(dados) {
+export function executarMotor(dados, userId) {
   const resultados = [];
 
   const { produtos, estoques, vendas } = dados;
@@ -28,8 +28,7 @@ export function executarMotor(dados) {
     }
   }
 
-  // salva no banco (async, mas não trava resposta)
-  salvarResultados(resultados);
+  salvarResultados(resultados, userId);
 
   return resultados;
 }

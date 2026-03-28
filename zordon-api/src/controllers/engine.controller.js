@@ -6,42 +6,36 @@ import {
 
 export async function executarAnalise(req, res) {
   try {
-    const dados = req.body;
+    const userId = req.usuario.id;
 
-    const resultados = executarMotor(dados);
+    const resultados = executarMotor(req.body, userId);
 
-    return res.json({
-      sucesso: true,
-      total: resultados.length,
-      resultados
-    });
+    return res.json(resultados);
   } catch (error) {
-    return res.status(500).json({
-      erro: error.message
-    });
+    return res.status(500).json({ erro: error.message });
   }
 }
 
 export async function obterResultados(req, res) {
   try {
-    const resultados = await listarResultados();
+    const userId = req.usuario.id;
+
+    const resultados = await listarResultados(userId);
 
     return res.json(resultados);
   } catch (error) {
-    return res.status(500).json({
-      erro: error.message
-    });
+    return res.status(500).json({ erro: error.message });
   }
 }
 
 export async function limpar(req, res) {
   try {
-    await limparResultados();
+    const userId = req.usuario.id;
+
+    await limparResultados(userId);
 
     return res.json({ sucesso: true });
   } catch (error) {
-    return res.status(500).json({
-      erro: error.message
-    });
+    return res.status(500).json({ erro: error.message });
   }
 }
