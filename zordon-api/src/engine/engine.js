@@ -4,7 +4,7 @@ import { analisarProdutoAltaVenda } from "./rules/produtoAltaVenda.rule.js";
 
 import { salvarResultados } from "../repositories/result.repository.js";
 
-export function executarMotor(dados, userId) {
+export function executarMotor(dados, empresaId) {
   const resultados = [];
 
   const { produtos, estoques, vendas } = dados;
@@ -28,7 +28,7 @@ export function executarMotor(dados, userId) {
     }
   }
 
-  salvarResultados(resultados, userId);
+  salvarResultados(resultados, empresaId);
 
   return resultados;
 }

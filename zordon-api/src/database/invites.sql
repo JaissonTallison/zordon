@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS invites (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(150) NOT NULL,
+  empresa_id INTEGER REFERENCES empresas(id),
+  token VARCHAR(255),
+  usado BOOLEAN DEFAULT false,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

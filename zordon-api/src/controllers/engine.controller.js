@@ -6,9 +6,9 @@ import {
 
 export async function executarAnalise(req, res) {
   try {
-    const userId = req.usuario.id;
+    const empresaId = req.usuario.empresa_id;
 
-    const resultados = executarMotor(req.body, userId);
+    const resultados = executarMotor(req.body, empresaId);
 
     return res.json(resultados);
   } catch (error) {
@@ -18,9 +18,9 @@ export async function executarAnalise(req, res) {
 
 export async function obterResultados(req, res) {
   try {
-    const userId = req.usuario.id;
+    const empresaId = req.usuario.empresa_id;
 
-    const resultados = await listarResultados(userId);
+    const resultados = await listarResultados(empresaId);
 
     return res.json(resultados);
   } catch (error) {
@@ -30,9 +30,9 @@ export async function obterResultados(req, res) {
 
 export async function limpar(req, res) {
   try {
-    const userId = req.usuario.id;
+    const empresaId = req.usuario.empresa_id;
 
-    await limparResultados(userId);
+    await limparResultados(empresaId);
 
     return res.json({ sucesso: true });
   } catch (error) {
