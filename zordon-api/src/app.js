@@ -5,6 +5,9 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
 import engineRoutes from "./routes/engine.routes.js";
 import inviteRoutes from "./routes/invite.routes.js";
+import userManagementRoutes from "./routes/user.management.routes.js";
+import auditRoutes from "./routes/audit.routes.js";
+
 
 dotenv.config();
 
@@ -17,6 +20,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/engine", engineRoutes);
 app.use("/api/invite", inviteRoutes);
+app.use("/api/users", userManagementRoutes);
+app.use("/api/audit", auditRoutes);
 
 // health check
 app.get("/", (req, res) => {

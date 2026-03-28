@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER,
+  empresa_id INTEGER,
+  acao VARCHAR(100),
+  descricao TEXT,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
