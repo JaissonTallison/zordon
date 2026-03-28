@@ -1,2 +1,84 @@
+# ========================
+# NODE.JS
+# ========================
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# build / dist
+dist/
+build/
+coverage/
+
+# ========================
+# ENV (CRÍTICO)
+# ========================
 .env
+.env.*
+!.env.example
+
+# ========================
+# LOGS
+# ========================
+logs/
+*.log
+
+# ========================
+# SISTEMA OPERACIONAL
+# ========================
+.DS_Store
+Thumbs.db
+
+# Linux
+*~
+
+# ========================
+# IDE / EDITOR
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ========================
+# DOCKER
+# ========================
+# volumes locais
+postgres_data/
+*.pid
+
+# docker override
+docker-compose.override.yml
+
+# ========================
+# BANCO DE DADOS
+# ========================
+*.sql.tmp
+
+# ========================
+# TESTES / CACHE
+# ========================
+.nyc_output/
+.cache/
+
+# ========================
+# FRONTEND (futuro)
+# ========================
+.next/
+out/
+.cache-loader/
+
+# ========================
+# ARQUIVOS SENSÍVEIS
+# ========================
+*.pem
+*.key
+*.crt
+
+# ========================
+# MISC
+# ========================
+tmp/
+temp/

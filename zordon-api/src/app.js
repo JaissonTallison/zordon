@@ -1,11 +1,15 @@
-const express = require('express');
+import express from "express";
+import engineRoutes from "./routes/engine.routes.js";
 
 const app = express();
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('ZORDON API funcionando');
+// rota principal
+app.use("/api/engine", engineRoutes);
+
+app.get("/", (req, res) => {
+  res.send("ZORDON API rodando...");
 });
 
-module.exports = app;
+export default app;
