@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS produtos (
+  id SERIAL PRIMARY KEY,
+  nome TEXT NOT NULL,
+  estoque INTEGER DEFAULT 0,
+  minimo INTEGER DEFAULT 0
+);

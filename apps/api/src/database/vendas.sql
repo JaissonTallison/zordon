@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS vendas (
+  id SERIAL PRIMARY KEY,
+  produto_id INTEGER REFERENCES produtos(id),
+  quantidade INTEGER,
+  total NUMERIC,
+  data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
