@@ -1,7 +1,10 @@
 import app from "./app.js";
 import { conectarDB } from "./config/database.js";
+import dotenv from "dotenv";
 
-const PORT = 3000;
+dotenv.config();
+
+const PORT = process.env.PORT || 3333;
 
 async function start() {
   await conectarDB();
