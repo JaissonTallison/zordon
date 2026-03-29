@@ -1,34 +1,30 @@
-import { analisarProdutoParado } from "./rules/produtoParado.rule.js";
-import { analisarEstoqueBaixo } from "./rules/estoqueBaixo.rule.js";
-import { analisarProdutoAltaVenda } from "./rules/produtoAltaVenda.rule.js";
+import produtoParado from "./rules/produtoParado.rule.js";
+import estoqueBaixo from "./rules/estoqueBaixo.rule.js";
+import produtoAltoVenda from "./rules/produtoAltoVenda.rule.js";
 
-import { salvarResultados } from "../repositories/result.repository.js";
+import { calcularScore } from "./utils/scoreCalculator.js";
 
-export function executarMotor(dados, empresaId) {
-  const resultados = [];
+export default async function engine(data) {
+  let resultados = [];
 
-  const { produtos, estoques, vendas } = dados;
+  const rules = [
+    produtoParado,
+    estoqueBaixo,
+    produtoAltoVenda
+  ];
 
-  for (const produto of produtos) {
-    const estoque = estoques.find(e => e.produto_id === produto.id);
-    const vendasProduto = vendas.filter(v => v.produto_id === produto.id);
+  for (const rule of rules) {
+    const res = await rule(data);
 
-    const regras = [
-      analisarProdutoParado,
-      analisarEstoqueBaixo,
-      analisarProdutoAltaVenda
-    ];
-
-    for (const regra of regras) {
-      const resultado = regra(produto, estoque, vendasProduto);
-
-      if (resultado) {
-        resultados.push(resultado);
-      }
+    if (Array.isArray(res)) {
+      resultados = resultados.concat(res);
     }
   }
 
-  salvarResultados(resultados, empresaId);
+  const comScore = resultados.map((decisao) => ({
+    ...decisao,
+    score: calcularScore(decisao)
+  }));
 
-  return resultados;
+  return comScore.sort((a, b) => b.score - a.score);
 }

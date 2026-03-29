@@ -5,26 +5,26 @@ import vendaRepository from "../repositories/venda.repository.js";
 
 import {
   salvarResultados,
-  listarResultados,
-  limparResultados,
   contarRecorrencia
 } from "../repositories/result.repository.js";
 
 import { calcularEscalonamento } from "../engine/utils/escalationCalculator.js";
 
+import { processarAlertas } from "./alert.service.js";
+
 /**
- * Executa análise completa
+ * Executa análise automática (usado pelo cron)
  */
-export async function executarAnalise(req, res) {
+export async function executarEngineAutomatico(empresaId = 1) {
   try {
+    // Buscar dados
     const produtos = await findAllProdutos();
     const vendas = await vendaRepository.getAll();
 
+    // Rodar engine
     let decisions = await engine({ produtos, vendas });
 
-    const empresaId = req.user?.empresa_id || 1;
-
-    // adicionar recorrência + escalonamento
+    // Adicionar recorrência + escalonamento
     decisions = await Promise.all(
       decisions.map(async (d) => {
         const recorrencia = await contarRecorrencia({
@@ -50,52 +50,18 @@ export async function executarAnalise(req, res) {
       })
     );
 
-    // salvar histórico
+    // Persistir resultados
     await salvarResultados(decisions, empresaId);
 
-    res.json(decisions);
+    // Processar alertas automáticos
+    await processarAlertas(decisions, empresaId);
+
+    // Log final
+    console.log(
+      `ZORDON executado automaticamente (${decisions.length} decisões)`
+    );
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Erro ao executar análise"
-    });
-  }
-}
-
-/**
- * Listar histórico
- */
-export async function obterResultados(req, res) {
-  try {
-    const empresaId = req.user?.empresa_id || 1;
-
-    const resultados = await listarResultados(empresaId);
-
-    res.json(resultados);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Erro ao obter resultados"
-    });
-  }
-}
-
-/**
- * Limpar histórico
- */
-export async function limpar(req, res) {
-  try {
-    const empresaId = req.user?.empresa_id || 1;
-
-    await limparResultados(empresaId);
-
-    res.json({
-      mensagem: "Resultados apagados com sucesso"
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      error: "Erro ao limpar resultados"
-    });
+    console.error("Erro no cron do ZORDON:", error);
   }
 }

@@ -1,51 +1,23 @@
-import { criarResultado } from "../utils/resultBuilder.js";
+export default async function estoqueBaixoRule({ produtos }) {
+  const resultados = [];
 
-export function analisarEstoqueBaixo(produto, estoque, vendas) {
-  const LIMITE_ESTOQUE_BAIXO = 20;
-  const PERIODO_DIAS = 30;
-  const LIMITE_VENDAS = 30;
+  for (const produto of produtos) {
+    if (produto.estoque <= produto.minimo) {
+      const valorUnitario = produto.valor || 0;
+      const impacto = valorUnitario * produto.minimo;
 
-  const hoje = new Date();
-  const dataLimite = new Date();
-  dataLimite.setDate(hoje.getDate() - PERIODO_DIAS);
+      resultados.push({
+        tipo: "problema",
+        entidade: "produto",
+        titulo: "Estoque baixo",
+        descricao: `${produto.nome} com estoque crítico (${produto.estoque})`,
 
-  const vendasRecentes = vendas.filter(v => {
-    return new Date(v.data) >= dataLimite;
-  });
-
-  const totalVendas = vendasRecentes.reduce((total, venda) => {
-    return total + venda.quantidade;
-  }, 0);
-
-  if (
-    estoque &&
-    estoque.quantidade < LIMITE_ESTOQUE_BAIXO &&
-    totalVendas > LIMITE_VENDAS
-  ) {
-    return criarResultado({
-      tipo: "PROBLEMA",
-      codigo: "ESTOQUE_BAIXO",
-      produto,
-      titulo: "Risco de ruptura de estoque",
-      descricao: `${produto.nome} possui alta saída e estoque baixo`,
-      impacto: "Perda de vendas por indisponibilidade do produto",
-      prioridade: calcularPrioridade(estoque.quantidade),
-      recomendacao: {
-        acao: "Repor estoque com urgência",
-        tipo: "OPERACIONAL"
-      },
-      dados: {
-        estoque: estoque.quantidade,
-        vendas: totalVendas
-      }
-    });
+        impacto: `Possível perda de R$ ${impacto.toFixed(2)} em vendas`,
+        recomendacao: "Repor estoque imediatamente",
+        prioridade: produto.estoque === 0 ? "alta" : "media"
+      });
+    }
   }
 
-  return null;
-}
-
-function calcularPrioridade(qtd) {
-  if (qtd < 5) return "ALTA";
-  if (qtd < 10) return "MEDIA";
-  return "BAIXA";
+  return resultados;
 }
