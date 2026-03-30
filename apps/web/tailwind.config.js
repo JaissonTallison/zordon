@@ -8,12 +8,14 @@ export default {
     extend: {
       colors: {
         zordon: {
-          dark: "#0f0c29",      // fundo profundo (quase preto)
-          mid: "#302b63",       // roxo escuro
-          primary: "#4b2a8f",   // roxo principal
-          accent: "#6d28d9",    // roxo vibrante (interações)
-          light: "#f8fafc",      // branco suave
+          dark: "#0f0c29",
+          mid: "#302b63",
+          primary: "#4b2a8f",
+          accent: "#6d28d9",
+          light: "#f8fafc",
+          warning: "#EA580C",
         },
+
         primaryLight: "#A78BFA",
         primaryDark: "#5B21B6",
 
@@ -25,7 +27,6 @@ export default {
 
         textPrimary: "#111827",
         textSecondary: "#6B7280",
-
       }
     },
   },

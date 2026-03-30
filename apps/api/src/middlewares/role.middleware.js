@@ -1,15 +1,13 @@
-export function autorizar(...rolesPermitidos) {
+export function autorizar(roleNecessaria) {
   return (req, res, next) => {
-    const usuario = req.usuario;
-
-    if (!usuario) {
+    if (!req.user) {
       return res.status(401).json({ erro: "Usuário não autenticado" });
     }
 
-    if (!rolesPermitidos.includes(usuario.role)) {
+    if (req.user.role !== roleNecessaria) {
       return res.status(403).json({ erro: "Acesso negado" });
     }
 
-    next();
+    return next();
   };
 }

@@ -9,59 +9,61 @@ import {
 } from "../repositories/result.repository.js";
 
 import { calcularEscalonamento } from "../engine/utils/escalationCalculator.js";
+import { normalizarDecisao } from "../engine/utils/normalizer.js";
 
-import { processarAlertas } from "./alert.service.js";
+// CORE
+async function run({ empresaId }) {
+  const produtos = await findAllProdutos();
+  const vendas = await vendaRepository.getAll();
 
-/**
- * Executa análise automática (usado pelo cron)
- */
+  let decisions = await engine({ produtos, vendas });
+
+  decisions = decisions.map(normalizarDecisao);
+
+  decisions = await Promise.all(
+    decisions.map(async (d) => {
+      const recorrencia = await contarRecorrencia({
+        codigo: d.codigo,
+        produto_id: d.produto_id,
+        empresaId
+      });
+
+      const escalonamento = calcularEscalonamento({
+        ...d,
+        recorrencia
+      });
+
+      return {
+        ...d,
+        recorrencia,
+        mensagem_recorrencia:
+          recorrencia > 1
+            ? `Problema ocorre há ${recorrencia} dias consecutivos`
+            : null,
+        ...escalonamento
+      };
+    })
+  );
+
+  await salvarResultados(decisions, empresaId);
+
+  return decisions;
+}
+
+// CRON (EXPORT QUE FALTAVA)
 export async function executarEngineAutomatico(empresaId = 1) {
   try {
-    // Buscar dados
-    const produtos = await findAllProdutos();
-    const vendas = await vendaRepository.getAll();
+    const decisions = await run({ empresaId });
 
-    // Rodar engine
-    let decisions = await engine({ produtos, vendas });
-
-    // Adicionar recorrência + escalonamento
-    decisions = await Promise.all(
-      decisions.map(async (d) => {
-        const recorrencia = await contarRecorrencia({
-          codigo: d.codigo,
-          produto_id: d.produto_id,
-          empresaId
-        });
-
-        const escalonamento = calcularEscalonamento({
-          ...d,
-          recorrencia
-        });
-
-        return {
-          ...d,
-          recorrencia,
-          mensagem_recorrencia:
-            recorrencia > 1
-              ? `Problema ocorre há ${recorrencia} dias consecutivos`
-              : null,
-          ...escalonamento
-        };
-      })
-    );
-
-    // Persistir resultados
-    await salvarResultados(decisions, empresaId);
-
-    // Processar alertas automáticos
-    await processarAlertas(decisions, empresaId);
-
-    // Log final
     console.log(
       `ZORDON executado automaticamente (${decisions.length} decisões)`
     );
-
   } catch (error) {
     console.error("Erro no cron do ZORDON:", error);
   }
 }
+
+// export default continua
+export default {
+  run
+};

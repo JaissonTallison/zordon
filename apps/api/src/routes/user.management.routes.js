@@ -10,26 +10,14 @@ import { autorizar } from "../middlewares/role.middleware.js";
 
 const router = express.Router();
 
+// aplica autenticação uma única vez
+router.use(autenticar);
+
 // só ADMIN pode acessar
-router.get(
-  "/",
-  autenticar,
-  autorizar("ADMIN"),
-  listar
-);
+router.get("/", autorizar("ADMIN"), listar);
 
-router.put(
-  "/role",
-  autenticar,
-  autorizar("ADMIN"),
-  alterarRole
-);
+router.put("/role", autorizar("ADMIN"), alterarRole);
 
-router.delete(
-  "/",
-  autenticar,
-  autorizar("ADMIN"),
-  remover
-);
+router.delete("/", autorizar("ADMIN"), remover);
 
 export default router;

@@ -6,24 +6,32 @@ import {
 
 import { registrarLog } from "../repositories/audit.repository.js";
 
-//  listar usuários
+// listar usuários
 export async function listar(req, res) {
   try {
-    const empresa_id = req.usuario.empresa_id;
+    const empresa_id = req.user.empresa_id;
 
     const usuarios = await listarUsuarios(empresa_id);
 
-    return res.json(usuarios);
+    return res.json({
+      data: usuarios,
+      meta: {
+        total: usuarios.length
+      }
+    });
+
   } catch (err) {
-    return res.status(500).json({ erro: err.message });
+    return res.status(500).json({
+      erro: err.message
+    });
   }
 }
 
-//  atualizar role
+// atualizar role
 export async function alterarRole(req, res) {
   try {
-    const empresa_id = req.usuario.empresa_id;
-    const user_id = req.usuario.id;
+    const empresa_id = req.user.empresa_id; 
+    const user_id = req.user.id; 
 
     const { userId, role } = req.body;
 
@@ -42,11 +50,11 @@ export async function alterarRole(req, res) {
   }
 }
 
-//  remover usuário
+// remover usuário
 export async function remover(req, res) {
   try {
-    const empresa_id = req.usuario.empresa_id;
-    const user_id = req.usuario.id;
+    const empresa_id = req.user.empresa_id; 
+    const user_id = req.user.id; 
 
     const { userId } = req.body;
 

@@ -16,12 +16,25 @@ import {
   marcarComoUsado
 } from "../repositories/invite.repository.js";
 
-//  REGISTRO
+
+function sanitizeUser(user) {
+  return {
+    id: user.id,
+    nome: user.nome,
+    email: user.email,
+    role: user.role,
+    empresa_id: user.empresa_id
+  };
+}
+
+// ============================
+// REGISTER
+// ============================
 export async function registrar(req, res) {
+
   try {
     const { nome, email, senha, empresa_nome, token } = req.body;
 
-    // verifica se já existe usuário
     const existe = await buscarPorEmail(email);
     if (existe) {
       return res.status(400).json({ erro: "Usuário já existe" });
@@ -31,17 +44,17 @@ export async function registrar(req, res) {
 
     let empresa;
 
-    //  PRIORIDADE 1: cadastro via convite
     if (token) {
       const convite = await buscarConvite(token);
 
       if (!convite) {
-        return res.status(400).json({ erro: "Convite inválido ou já utilizado" });
+        return res.status(400).json({
+          erro: "Convite inválido ou já utilizado"
+        });
       }
 
       empresa = { id: convite.empresa_id };
 
-      // marca convite como usado
       await marcarComoUsado(convite.id);
 
       const usuario = await criarUsuario({
@@ -52,18 +65,19 @@ export async function registrar(req, res) {
         empresa_id: empresa.id
       });
 
-      return res.json(usuario);
+      return res.json({
+        user: sanitizeUser(usuario)
+      });
     }
 
-    //  PRIORIDADE 2: criação normal (ADMIN cria empresa)
     if (!empresa_nome) {
-      return res.status(400).json({ erro: "empresa_nome é obrigatório" });
+      return res.status(400).json({
+        erro: "empresa_nome é obrigatório"
+      });
     }
 
-    // busca empresa existente
     empresa = await buscarEmpresaPorNome(empresa_nome);
 
-    // se não existir, cria
     if (!empresa) {
       empresa = await criarEmpresa(empresa_nome);
     }
@@ -76,35 +90,54 @@ export async function registrar(req, res) {
       empresa_id: empresa.id
     });
 
-    return res.json(usuario);
+    
+    return res.json({
+      user: sanitizeUser(usuario)
+    });
 
   } catch (err) {
-    return res.status(500).json({ erro: err.message });
+    console.error(err);
+    return res.status(500).json({
+      erro: err.message
+    });
   }
 }
 
-//  LOGIN
+// ============================
+// LOGIN
+// ============================
 export async function login(req, res) {
+
   try {
     const { email, senha } = req.body;
 
     const usuario = await buscarPorEmail(email);
 
     if (!usuario) {
-      return res.status(400).json({ erro: "Usuário não encontrado" });
+      return res.status(400).json({
+        erro: "Usuário não encontrado"
+      });
     }
 
     const senhaValida = await compararSenha(senha, usuario.senha);
 
     if (!senhaValida) {
-      return res.status(401).json({ erro: "Senha inválida" });
+      return res.status(401).json({
+        erro: "Senha inválida"
+      });
     }
 
     const token = gerarToken(usuario);
 
-    return res.json({ token });
+    return res.json({
+      token,
+      user: sanitizeUser(usuario)
+    });
 
   } catch (err) {
-    return res.status(500).json({ erro: err.message });
+    console.error(err);
+    return res.status(500).json({
+      erro: err.message
+    });
   }
 }

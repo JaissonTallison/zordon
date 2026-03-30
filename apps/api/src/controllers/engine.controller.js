@@ -11,7 +11,7 @@ import {
 } from "../repositories/result.repository.js";
 
 import { calcularEscalonamento } from "../engine/utils/escalationCalculator.js";
-
+import { normalizarDecisao } from "../engine/utils/normalizer.js";
 /**
  * Executa análise completa
  */
@@ -21,6 +21,10 @@ export async function executarAnalise(req, res) {
     const vendas = await vendaRepository.getAll();
 
     let decisions = await engine({ produtos, vendas });
+
+    decisions = decisions.map(normalizarDecisao);
+
+
 
     const empresaId = req.user?.empresa_id || 1;
 

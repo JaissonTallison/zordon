@@ -7,33 +7,32 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Menu,
+  Zap
 } from "lucide-react";
 
-export default function Sidebar() {
-  const [active, setActive] = useState("dashboard");
+import { NavLink } from "react-router-dom"; // 🔥 IMPORTANTE
 
-  // persistência (colapsado)
+export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem("sidebar-collapsed") === "true";
   });
 
-  // mobile
   const [openMobile, setOpenMobile] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("sidebar-collapsed", collapsed);
   }, [collapsed]);
 
-  // menu escalável (pensado no futuro)
-  const menu = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "produtos", label: "Produtos", icon: Package },
-    { id: "usuarios", label: "Usuários", icon: Users },
-    { id: "relatorios", label: "Relatórios", icon: BarChart3 },
-    { id: "configuracoes", label: "Configurações", icon: Settings }
-  ];
-
+  // ROTAS
+ const menu = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/" },
+  { id: "decisions", label: "Decisões", icon: Zap, path: "/decisions" },
+  { id: "produtos", label: "Produtos", icon: Package, path: "/produtos" },
+  { id: "usuarios", label: "Usuários", icon: Users, path: "/usuarios" },
+  { id: "relatorios", label: "Relatórios", icon: BarChart3, path: "/relatorios" },
+  { id: "configuracoes", label: "Configurações", icon: Settings, path: "/configuracoes" }
+];
   return (
     <>
       {/* BOTÃO MOBILE */}
@@ -44,7 +43,7 @@ export default function Sidebar() {
         <Menu size={20} />
       </button>
 
-      {/* OVERLAY MOBILE */}
+      {/* OVERLAY */}
       {openMobile && (
         <div
           onClick={() => setOpenMobile(false)}
@@ -56,11 +55,8 @@ export default function Sidebar() {
       <aside
         className={`
         fixed top-0 left-0 z-50 h-screen flex flex-col text-white
-
         bg-gradient-to-b from-zordon-dark via-zordon-mid to-zordon-primary
-
         transition-all duration-300 ease-in-out
-
         ${collapsed ? "w-20" : "w-64"}
         ${openMobile ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
@@ -77,11 +73,7 @@ export default function Sidebar() {
             onClick={() => setCollapsed(!collapsed)}
             className="p-2 rounded-lg hover:bg-zordon-accent/30 transition"
           >
-            {collapsed ? (
-              <ChevronRight size={18} />
-            ) : (
-              <ChevronLeft size={18} />
-            )}
+            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </button>
         </div>
 
@@ -89,16 +81,15 @@ export default function Sidebar() {
         <nav className="flex-1 space-y-2 px-2 overflow-y-auto">
           {menu.map((item) => {
             const Icon = item.icon;
-            const isActive = active === item.id;
 
             return (
               <div key={item.id} className="relative group">
-                <button
-                  onClick={() => {
-                    setActive(item.id);
-                    setOpenMobile(false);
-                  }}
-                  className={`
+                
+                {/* 🔥 NAVLINK NO LUGAR DO BUTTON */}
+                <NavLink
+                  to={item.path}
+                  onClick={() => setOpenMobile(false)}
+                  className={({ isActive }) => `
                     w-full flex items-center gap-3 px-3 py-3 rounded-xl
                     transition-all duration-200
 
@@ -116,7 +107,7 @@ export default function Sidebar() {
                       {item.label}
                     </span>
                   )}
-                </button>
+                </NavLink>
 
                 {/* TOOLTIP */}
                 {collapsed && (
@@ -142,7 +133,6 @@ export default function Sidebar() {
         <div className="p-3 border-t border-white/10">
           <div className="flex items-center gap-3">
 
-            {/* Avatar */}
             <div className="w-10 h-10 rounded-full bg-zordon-accent flex items-center justify-center font-bold shadow-md">
               J
             </div>

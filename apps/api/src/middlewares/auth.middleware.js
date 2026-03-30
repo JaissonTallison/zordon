@@ -6,6 +6,7 @@ dotenv.config();
 const SECRET = process.env.JWT_SECRET;
 
 export function autenticar(req, res, next) {
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -27,7 +28,10 @@ export function autenticar(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, SECRET);
+
+    // padrão usado no resto do sistema
     req.usuario = decoded;
+
     return next();
   } catch {
     return res.status(401).json({ erro: "Token inválido" });
