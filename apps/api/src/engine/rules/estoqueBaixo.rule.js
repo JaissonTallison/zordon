@@ -4,7 +4,9 @@ export default async function estoqueBaixoRule({ produtos }) {
   for (const produto of produtos) {
     if (produto.estoque <= produto.minimo) {
       const valorUnitario = produto.valor || 0;
-      const impacto = valorUnitario * produto.minimo;
+
+      // cálculo real
+      const impactoValor = valorUnitario * produto.minimo;
 
       resultados.push({
         tipo: "problema",
@@ -12,9 +14,20 @@ export default async function estoqueBaixoRule({ produtos }) {
         titulo: "Estoque baixo",
         descricao: `${produto.nome} com estoque crítico (${produto.estoque})`,
 
-        impacto: `Possível perda de R$ ${impacto.toFixed(2)} em vendas`,
-        recomendacao: "Repor estoque imediatamente",
-        prioridade: produto.estoque === 0 ? "alta" : "media"
+        // TEXTO (UI)
+        impacto: "Possível perda em vendas",
+
+        // VALOR REAL (INTELIGÊNCIA)
+        impacto_valor: impactoValor,
+
+        recomendacao: {
+          acao: "Repor estoque imediatamente"
+        },
+
+        prioridade: produto.estoque === 0 ? "CRITICO" : "ALTO",
+
+        dados: produto,
+        gerado_em: new Date()
       });
     }
   }

@@ -63,7 +63,7 @@ export async function executarAnalise(req, res) {
 }
 
 /**
- * Listar histórico
+ * RESULTADOS ATUAIS (dashboard)
  */
 export async function obterResultados(req, res) {
   try {
@@ -76,6 +76,24 @@ export async function obterResultados(req, res) {
     console.error(error);
     res.status(500).json({
       error: "Erro ao obter resultados"
+    });
+  }
+}
+
+/**
+ * HISTÓRICO (timeline futura)
+ */
+export async function obterHistorico(req, res) {
+  try {
+    const empresaId = req.user?.empresa_id || 1;
+
+    const resultados = await listarResultados(empresaId);
+
+    res.json(resultados);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Erro ao obter histórico"
     });
   }
 }

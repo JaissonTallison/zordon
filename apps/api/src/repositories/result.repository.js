@@ -73,8 +73,8 @@ export async function salvarResultados(resultados, empresaId) {
     await pool.query(
       `
       INSERT INTO resultados 
-      (tipo, codigo, produto_id, titulo, descricao, impacto, prioridade, recomendacao, dados, gerado_em, empresa_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10)
+      (tipo, codigo, produto_id, titulo, descricao, impacto, impacto_valor, prioridade, recomendacao, dados, gerado_em, empresa_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),$11)
       `,
       [
         r.tipo,
@@ -83,6 +83,7 @@ export async function salvarResultados(resultados, empresaId) {
         r.titulo,
         r.descricao,
         r.impacto,
+        r.impacto_valor || 0, 
         r.prioridade,
         JSON.stringify(r.recomendacao || {}),
         JSON.stringify(r),

@@ -1,37 +1,22 @@
 import express from "express";
+
 import {
   executarAnalise,
   obterResultados,
-  limpar
+  limpar,
+  obterHistorico
 } from "../controllers/engine.controller.js";
-
-import { autenticar } from "../middlewares/auth.middleware.js";
-import { autorizar } from "../middlewares/role.middleware.js";
 
 const router = express.Router();
 
-// ANALISTA e ADMIN podem executar
-router.post(
-  "/executar",
-  autenticar,
-  autorizar("ADMIN", "ANALISTA"),
-  executarAnalise
-);
+// 🔥 SEM AUTH TEMPORARIAMENTE
 
-// todos autenticados podem ver
-router.get(
-  "/resultados",
-  autenticar,
-  autorizar("ADMIN", "ANALISTA", "VISUALIZADOR"),
-  obterResultados
-);
+router.post("/executar", executarAnalise);
 
-// só ADMIN pode apagar
-router.delete(
-  "/resultados",
-  autenticar,
-  autorizar("ADMIN"),
-  limpar
-);
+router.get("/resultados", obterResultados);
+
+router.get("/historico", obterHistorico);
+
+router.delete("/resultados", limpar);
 
 export default router;

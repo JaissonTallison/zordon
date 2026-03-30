@@ -7,10 +7,23 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# build / dist
+# ========================
+# BUILD / DIST
+# ========================
 dist/
 build/
 coverage/
+apps/web/dist/
+apps/api/dist/
+
+# ========================
+# VITE / FRONTEND
+# ========================
+.vite/
+.cache/
+.cache-loader/
+.next/
+out/
 
 # ========================
 # ENV (CRÍTICO)
@@ -30,8 +43,6 @@ logs/
 # ========================
 .DS_Store
 Thumbs.db
-
-# Linux
 *~
 
 # ========================
@@ -45,11 +56,8 @@ Thumbs.db
 # ========================
 # DOCKER
 # ========================
-# volumes locais
 postgres_data/
 *.pid
-
-# docker override
 docker-compose.override.yml
 
 # ========================
@@ -61,14 +69,7 @@ docker-compose.override.yml
 # TESTES / CACHE
 # ========================
 .nyc_output/
-.cache/
-
-# ========================
-# FRONTEND (futuro)
-# ========================
-.next/
-out/
-.cache-loader/
+coverage/
 
 # ========================
 # ARQUIVOS SENSÍVEIS
@@ -78,7 +79,22 @@ out/
 *.crt
 
 # ========================
-# MISC
+# TEMP / MISC
 # ========================
 tmp/
 temp/
+
+# ========================
+# TYPESCRIPT (futuro)
+# ========================
+*.tsbuildinfo
+
+# ========================
+# LINT / FORMAT
+# ========================
+.eslintcache
+
+# ========================
+# DEBUG
+# ========================
+*.local
