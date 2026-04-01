@@ -1,28 +1,28 @@
 export function normalizarDecisao(d) {
+  const impactoNumerico =
+    typeof d.impacto_valor === "number"
+      ? d.impacto_valor
+      : extrairValor(d.impacto);
+
   return {
     ...d,
 
-    // garante codigo
     codigo:
       d.codigo ||
       d.titulo?.toUpperCase().replace(/\s+/g, "_"),
 
-    // garante produto_id
     produto_id:
       d.produto_id ||
       d.dados?.id ||
       null,
 
-    // padroniza prioridade
     prioridade: normalizarPrioridade(d.prioridade),
 
-    // garante número
-    impacto_valor:
-      typeof d.impacto_valor === "number"
-        ? d.impacto_valor
-        : extrairValor(d.impacto),
+    // 🚨 GARANTE NÚMERO REAL
+    impacto_valor: Number(impactoNumerico || 0),
 
-    // padroniza recomendação
+    score: Number(d.score || 0),
+
     recomendacao:
       typeof d.recomendacao === "string"
         ? { acao: d.recomendacao }

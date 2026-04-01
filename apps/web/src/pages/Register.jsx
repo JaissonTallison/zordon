@@ -1,36 +1,52 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuthStore from "../store/useAuthStore";
-import { Link } from "react-router-dom";
+import api from "../services/api";
 
-export default function Login() {
-
-  const { login } = useAuthStore();
+export default function Register() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+  const [form, setForm] = useState({
+    nome: "",
+    email: "",
+    senha: "",
+    empresa_nome: ""
+  });
+
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
 
-  const handleLogin = async (e) => {
-    e.preventDefault(); 
+  function handleChange(e) {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
 
     try {
       setLoading(true);
       setErro("");
 
-      await login(email, senha);
+      // 🔥 REGISTRA NO BACKEND
+      await api.post("/auth/register", form);
 
-      navigate("/"); 
+      // 🔥 REDIRECIONA PARA LOGIN (SEM AUTO LOGIN)
+      navigate("/login");
 
     } catch (err) {
       console.error(err);
-      setErro("Credenciais inválidas");
+
+      setErro(
+        err.response?.data?.erro ||
+        "Erro ao criar conta"
+      );
+
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -46,11 +62,11 @@ export default function Login() {
 
         <div>
           <h2 className="text-4xl font-bold leading-tight">
-            Transforme dados em decisões com impacto financeiro
+            Comece a tomar decisões inteligentes hoje
           </h2>
 
           <p className="mt-4 text-gray-300">
-            O sistema identifica problemas e aumenta resultados automaticamente.
+            Crie sua conta e deixe o sistema identificar oportunidades automaticamente.
           </p>
         </div>
 
@@ -63,34 +79,51 @@ export default function Login() {
       <div className="flex w-full md:w-1/2 items-center justify-center bg-zordon-light">
 
         <form
-          onSubmit={handleLogin}
+          onSubmit={handleSubmit}
           className="w-full max-w-md p-8"
         >
 
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-textPrimary">
-              Acessar sistema
+              Criar conta
             </h2>
             <p className="text-sm text-textSecondary">
-              Entre com sua conta para continuar
+              Configure seu ambiente inicial
             </p>
           </div>
 
           <div className="space-y-4">
 
             <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="nome"
+              placeholder="Nome"
+              value={form.nome}
+              onChange={handleChange}
               className="w-full p-3 rounded-lg border border-gray-300"
             />
 
             <input
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full p-3 rounded-lg border border-gray-300"
+            />
+
+            <input
+              name="senha"
               type="password"
               placeholder="Senha"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              value={form.senha}
+              onChange={handleChange}
+              className="w-full p-3 rounded-lg border border-gray-300"
+            />
+
+            <input
+              name="empresa_nome"
+              placeholder="Nome da empresa"
+              value={form.empresa_nome}
+              onChange={handleChange}
               className="w-full p-3 rounded-lg border border-gray-300"
             />
 
@@ -101,7 +134,7 @@ export default function Login() {
             )}
 
             <button
-              type="submit" // IMPORTANTE
+              type="submit"
               disabled={loading}
               className={`w-full p-3 rounded-lg text-white font-semibold ${
                 loading
@@ -109,19 +142,19 @@ export default function Login() {
                   : "bg-zordon-primary hover:bg-zordon-accent"
               }`}
             >
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? "Criando..." : "Criar conta"}
             </button>
 
           </div>
 
           <div className="mt-6 text-sm text-center">
-            Não tem conta?{" "}
-            <Link
-              to="/register"
+            Já tem conta?{" "}
+            <span
+              onClick={() => navigate("/login")}
               className="text-zordon-accent cursor-pointer"
             >
-              Criar conta
-            </Link>
+              Entrar
+            </span>
           </div>
 
         </form>

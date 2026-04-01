@@ -1,19 +1,23 @@
 import express from "express";
+
 import {
   listar,
   alterarRole,
   remover
 } from "../controllers/user.management.controller.js";
 
-import { autenticar } from "../middlewares/auth.middleware.js";
-import { autorizar } from "../middlewares/role.middleware.js";
+import { autenticar, autorizar } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-// aplica autenticação uma única vez
+/**
+ * Autenticação obrigatória para todas rotas
+ */
 router.use(autenticar);
 
-// só ADMIN pode acessar
+/**
+ * Apenas ADMIN pode acessar
+ */
 router.get("/", autorizar("ADMIN"), listar);
 
 router.put("/role", autorizar("ADMIN"), alterarRole);

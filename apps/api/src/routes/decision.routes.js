@@ -1,15 +1,12 @@
-import { Router } from "express";
-import {
-  sendFeedback,
-  getDecisions,
-} from "../controllers/decision.controller.js";
+import express from "express";
+import { salvarFeedback } from "../controllers/decision.controller.js";
+import { autenticar } from "../middlewares/auth.middleware.js";
 
-const router = Router();
+const router = express.Router();
 
-// listar decisões
-router.get("/", getDecisions);
+router.use(autenticar);
 
-// enviar feedback
-router.post("/:id/feedback", sendFeedback);
+//FEEDBACK IA
+router.post("/feedback", salvarFeedback);
 
 export default router;

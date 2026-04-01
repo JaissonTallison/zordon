@@ -1,17 +1,19 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Dashboard from "./pages/Dashboard";
-import Decisions from "./pages/Decisions";
-import Produtos from "./pages/Produtos";
-import Relatorios from "./pages/Relatorios";
-import Usuarios from "./pages/Usuarios";
-import Login from "./pages/Login";
-import Configuracoes from "./pages/Configuracoes";
-
 import MainLayout from "./layout/MainLayout";
 
+// PÁGINAS
+import Home from "./pages/Home";
+import Decisions from "./pages/Decisions";
+import Products from "./pages/Products";
+import Impact from "./pages/Impact";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Intelligence from "./pages/Intelligence";
+import Settings from "./pages/Setting";
+
 /**
- *  PROTECTED LAYOUT (PROFISSIONAL)
+ *  PROTEÇÃO DE ROTAS
  */
 function ProtectedLayout() {
   const token = localStorage.getItem("token");
@@ -28,22 +30,24 @@ export default function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* PUBLIC */}
+        {/*  PÚBLICAS */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-        {/* PRIVATE */}
+        {/*  PRIVADAS */}
         <Route element={<ProtectedLayout />}>
 
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/decisions" element={<Decisions />} />
-          <Route path="/produtos" element={<Produtos />} />
-          <Route path="/relatorios" element={<Relatorios />} />
-          <Route path="/usuarios" element={<Usuarios />} />
-         <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route index element={<Home />} />
+          <Route path="decisions" element={<Decisions />} />
+          <Route path="produtos" element={<Products />} />
+          <Route path="impacto" element={<Impact />} />
+          <Route path="inteligencia" element={<Intelligence />} />
+          <Route path="configuracoes" element={<Settings />} />
+
 
         </Route>
 
-        {/* FALLBACK GLOBAL */}
+        {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>

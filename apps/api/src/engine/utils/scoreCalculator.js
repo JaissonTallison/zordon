@@ -1,26 +1,43 @@
+/**
+ * Calcula score da decisão com base em:
+ * - impacto financeiro real
+ * - prioridade
+ * - tipo (problema > oportunidade)
+ */
 export function calcularScore(decisao) {
   let score = 0;
 
-  // 1. Impacto financeiro (extrair número do texto)
-  const match = decisao.impacto.match(/R\$\s?([\d.]+)/);
+  /**
+   * 1. Impacto financeiro (principal fator)
+   */
+  const impacto = Number(decisao.impacto_valor || 0);
 
-  if (match) {
-    const valor = parseFloat(match[1]);
-    score += valor;
-  }
+  score += impacto;
 
-  // 2. Prioridade
+  /**
+   * 2. Prioridade
+   */
   const prioridadePeso = {
-    alta: 1000,
-    media: 500,
-    baixa: 100
+    CRITICO: 2000,
+    ALTO: 1000,
+    MEDIO: 500,
+    BAIXO: 100
   };
 
   score += prioridadePeso[decisao.prioridade] || 0;
 
-  // 3. Tipo (problema pesa mais que oportunidade)
+  /**
+   * 3. Tipo de decisão
+   */
   if (decisao.tipo === "problema") {
-    score += 300;
+    score += 500;
+  }
+
+  /**
+   * 4. Recorrência (quanto mais recorrente, mais crítico)
+   */
+  if (decisao.recorrencia) {
+    score += decisao.recorrencia * 200;
   }
 
   return score;

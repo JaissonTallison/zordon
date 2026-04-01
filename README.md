@@ -297,3 +297,6 @@ Jaisson Tallison, Iara, Heverton e Fernando.
 # 21. Conclusão
 
 O ZORDON propõe uma abordagem ativa para análise de dados empresariais, transformando informações em decisões acionáveis e contribuindo para eficiência operacional.
+
+
+Use esse contexto como base do projeto zordon e nao desvie da arquitetura e objetivo.

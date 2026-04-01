@@ -21,7 +21,7 @@ async function startServer() {
       console.log(`Servidor rodando em http://localhost:${PORT}`);
 
       // Iniciar cron do ZORDON
-      iniciarCronZordon();
+      // iniciarCronZordon();
     });
 
   } catch (error) {

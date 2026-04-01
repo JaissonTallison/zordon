@@ -1,43 +1,27 @@
-import decisionService from "../services/decision.service.js";
+import { pool } from "../config/database.js";
 
-export const getDecisions = async (req, res) => {
+export async function salvarFeedback(req, res) {
   try {
+    const { decision_id, util } = req.body;
     const empresaId = req.user?.empresa_id;
 
-    const decisions = await decisionService.getAll({
-      empresaId,
-    });
+    await pool.query(
+      `
+      INSERT INTO decision_feedback 
+      (decision_id, empresa_id, resultado_real)
+      VALUES ($1, $2, $3)
+      `,
+      [
+        decision_id,
+        empresaId,
+        util ? 1 : -1
+      ]
+    );
 
-    return res.json(decisions);
+    res.json({ sucesso: true });
+
   } catch (error) {
-    console.error("Erro ao buscar decisões:", error);
-    return res.status(500).json({ error: "Erro interno" });
+    console.error(error);
+    res.status(500).json({ error: "Erro ao salvar feedback" });
   }
-};
-
-export const sendFeedback = async (req, res) => {
-  try {
-    const decisionId = req.params.id;
-    const { status, resultado_real, observacao } = req.body;
-
-    if (!status) {
-      return res.status(400).json({
-        error: "Status é obrigatório",
-      });
-    }
-
-    const result = await decisionService.sendFeedback({
-      decisionId,
-      status,
-      resultado_real,
-      observacao,
-      userId: req.user?.id,
-      empresaId: req.user?.empresa_id,
-    });
-
-    return res.json(result);
-  } catch (error) {
-    console.error("Erro ao enviar feedback:", error);
-    return res.status(500).json({ error: error.message });
-  }
-};
+}

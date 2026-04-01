@@ -1,14 +1,15 @@
 import { pool } from "../config/database.js";
 
 /**
- * Verifica se já existe um resultado igual no mesmo dia
+ * Verifica se já existe resultado no dia
  */
 async function jaExisteHoje({ codigo, produto_id, empresaId }) {
   const result = await pool.query(
     `
-    SELECT 1 FROM resultados
+    SELECT 1
+    FROM resultados
     WHERE codigo = $1
-      AND produto_id = $2
+      AND (produto_id = $2 OR ($2 IS NULL AND produto_id IS NULL))
       AND empresa_id = $3
       AND DATE(gerado_em) = CURRENT_DATE
     LIMIT 1
@@ -20,7 +21,7 @@ async function jaExisteHoje({ codigo, produto_id, empresaId }) {
 }
 
 /**
- * Conta recorrência (dias consecutivos)
+ * Recorrência (dias consecutivos)
  */
 export async function contarRecorrencia({ codigo, produto_id, empresaId }) {
   const result = await pool.query(
@@ -28,7 +29,7 @@ export async function contarRecorrencia({ codigo, produto_id, empresaId }) {
     SELECT DATE(gerado_em) as dia
     FROM resultados
     WHERE codigo = $1
-      AND produto_id = $2
+      AND (produto_id = $2 OR ($2 IS NULL AND produto_id IS NULL))
       AND empresa_id = $3
     ORDER BY dia DESC
     `,
@@ -58,55 +59,122 @@ export async function contarRecorrencia({ codigo, produto_id, empresaId }) {
 }
 
 /**
- * Salva resultados evitando duplicação diária
+ * Salvar resultados (FINAL + BLINDADO)
  */
 export async function salvarResultados(resultados, empresaId) {
-  for (const r of resultados) {
-    const existe = await jaExisteHoje({
-      codigo: r.codigo,
-      produto_id: r.produto_id,
-      empresaId
-    });
+  if (!Array.isArray(resultados) || resultados.length === 0) return;
 
-    if (existe) continue;
-
-    await pool.query(
-      `
-      INSERT INTO resultados 
-      (tipo, codigo, produto_id, titulo, descricao, impacto, impacto_valor, prioridade, recomendacao, dados, gerado_em, empresa_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),$11)
-      `,
-      [
-        r.tipo,
-        r.codigo || null,
-        r.produto_id || null,
-        r.titulo,
-        r.descricao,
-        r.impacto,
-        r.impacto_valor || 0, 
-        r.prioridade,
-        JSON.stringify(r.recomendacao || {}),
-        JSON.stringify(r),
-        empresaId
-      ]
-    );
-  }
-}
-
-/**
- * Listar histórico
- */
-export async function listarResultados(empresaId) {
-  const result = await pool.query(
+  const existentes = await pool.query(
     `
-    SELECT * FROM resultados
+    SELECT codigo, produto_id
+    FROM resultados
     WHERE empresa_id = $1
-    ORDER BY gerado_em DESC
+      AND DATE(gerado_em) = CURRENT_DATE
     `,
     [empresaId]
   );
 
-  return result.rows;
+  const mapaExistentes = new Set(
+    existentes.rows.map(r => `${r.codigo}_${r.produto_id ?? "null"}`)
+  );
+
+  for (const r of resultados) {
+    try {
+      const chave = `${r.codigo}_${r.produto_id ?? "null"}`;
+
+      if (mapaExistentes.has(chave)) continue;
+
+      await pool.query(
+        `
+        INSERT INTO resultados 
+        (
+          tipo,
+          codigo,
+          produto_id,
+          titulo,
+          descricao,
+          impacto,
+          impacto_valor,
+          prioridade,
+          score,
+          recomendacao,
+          dados,
+          status,
+          gerado_em,
+          empresa_id
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW(),$13)
+        `,
+        [
+          r.tipo || null,
+          r.codigo || null,
+          r.produto_id ?? null,
+          r.titulo || null,
+          r.descricao || null,
+          r.impacto || null,
+
+          Number(r.impacto_valor || 0),
+
+          r.prioridade || "MEDIO",
+          Number(r.score_final ?? r.score ?? 0),
+
+          JSON.stringify(r.recomendacao || {}),
+          JSON.stringify(r),
+
+          "PENDENTE",
+          empresaId
+        ]
+      );
+    } catch (err) {
+      console.error("Erro ao salvar resultado:", err);
+    }
+  }
+}
+
+/**
+ * Listar histórico (AGORA COM PRODUTO NOME)
+ */
+export async function listarResultados(empresaId) {
+  const result = await pool.query(
+    `
+    SELECT 
+      r.id,
+      r.codigo,
+      r.produto_id,
+      p.nome AS produto_nome,
+      r.impacto_valor,
+      r.prioridade,
+      r.score,
+      r.status,
+      r.gerado_em
+    FROM resultados r
+    LEFT JOIN produtos p ON p.id = r.produto_id
+    WHERE r.empresa_id = $1
+    ORDER BY r.impacto_valor DESC
+    `,
+    [empresaId]
+  );
+
+  return result.rows.map(r => ({
+    ...r,
+    impacto_valor: Number(r.impacto_valor || 0),
+    score: Number(r.score || 0)
+  }));
+}
+
+/**
+ * Atualizar status
+ */
+export async function atualizarStatus(id, status, empresaId) {
+  await pool.query(
+    `
+    UPDATE resultados
+    SET status = $1
+    WHERE id = $2
+      AND empresa_id = $3
+    `,
+    [status, id, empresaId]
+  );
 }
 
 /**

@@ -1,38 +1,121 @@
 import { pool } from "../config/database.js";
 
-// GET
-export async function findAllProdutos() {
+/**
+ *  Buscar todos os produtos da empresa
+ */
+export async function findAllProdutos(empresaId) {
+  if (!empresaId) {
+    throw new Error("empresaId é obrigatório em findAllProdutos");
+  }
+
   const result = await pool.query(
-    "SELECT * FROM produtos ORDER BY id DESC"
+    `
+    SELECT id, nome, estoque, minimo, empresa_id, criado_em
+    FROM produtos
+    WHERE empresa_id = $1
+    ORDER BY id DESC
+    `,
+    [empresaId]
   );
+
   return result.rows;
 }
 
-// CREATE
-export async function createProduto(data) {
-  const { nome, estoque, minimo } = data;
+/**
+ *  Buscar produto por ID (IMPORTANTE pro engine)
+ */
+export async function findProdutoById(id, empresaId) {
+  const result = await pool.query(
+    `
+    SELECT id, nome, estoque, minimo, empresa_id
+    FROM produtos
+    WHERE id = $1
+      AND empresa_id = $2
+    LIMIT 1
+    `,
+    [id, empresaId]
+  );
+
+  return result.rows[0] || null;
+}
+
+/**
+ *  Criar produto
+ */
+export async function createProduto(data, empresaId) {
+  if (!empresaId) {
+    throw new Error("empresaId é obrigatório em createProduto");
+  }
+
+  const { nome, estoque = 0, minimo = 0 } = data;
+
+  if (!nome) {
+    throw new Error("nome é obrigatório");
+  }
 
   const result = await pool.query(
-    "INSERT INTO produtos (nome, estoque, minimo) VALUES ($1, $2, $3) RETURNING *",
-    [nome, estoque, minimo]
+    `
+    INSERT INTO produtos (nome, estoque, minimo, empresa_id)
+    VALUES ($1, $2, $3, $4)
+    RETURNING id, nome, estoque, minimo, empresa_id
+    `,
+    [nome, estoque, minimo, empresaId]
   );
 
   return result.rows[0];
 }
 
-// UPDATE
-export async function updateProduto(id, data) {
+/**
+ *  Atualizar produto
+ */
+export async function updateProduto(id, data, empresaId) {
+  if (!empresaId) {
+    throw new Error("empresaId é obrigatório em updateProduto");
+  }
+
   const { nome, estoque, minimo } = data;
 
   const result = await pool.query(
-    "UPDATE produtos SET nome=$1, estoque=$2, minimo=$3 WHERE id=$4 RETURNING *",
-    [nome, estoque, minimo, id]
+    `
+    UPDATE produtos
+    SET nome = COALESCE($1, nome),
+        estoque = COALESCE($2, estoque),
+        minimo = COALESCE($3, minimo)
+    WHERE id = $4
+      AND empresa_id = $5
+    RETURNING id, nome, estoque, minimo, empresa_id
+    `,
+    [nome, estoque, minimo, id, empresaId]
   );
+
+  if (result.rowCount === 0) {
+    throw new Error("Produto não encontrado ou não pertence à empresa");
+  }
 
   return result.rows[0];
 }
 
-// DELETE
-export async function deleteProduto(id) {
-  await pool.query("DELETE FROM produtos WHERE id=$1", [id]);
+/**
+ *  Deletar produto
+ */
+export async function deleteProduto(id, empresaId) {
+  if (!empresaId) {
+    throw new Error("empresaId é obrigatório em deleteProduto");
+  }
+
+  const result = await pool.query(
+    `
+    DELETE FROM produtos
+    WHERE id = $1
+      AND empresa_id = $2
+    RETURNING id
+    `,
+    [id, empresaId]
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error("Produto não encontrado ou não pertence à empresa");
+  }
+
+  return true;
 }

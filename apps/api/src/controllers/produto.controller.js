@@ -5,46 +5,102 @@ import {
   deleteProduto
 } from "../repositories/produto.repository.js";
 
-// GET
+/**
+ * LISTAR PRODUTOS
+ */
 export async function getProdutos(req, res) {
   try {
-    const produtos = await findAllProdutos();
-    res.json(produtos);
+    const empresaId = req.user?.empresa_id;
+
+    if (!empresaId) {
+      return res.status(400).json({
+        error: "empresa_id não encontrado no token"
+      });
+    }
+
+    const produtos = await findAllProdutos(empresaId);
+
+    return res.json(produtos);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Erro ao buscar produtos" });
+    return res.status(500).json({
+      error: "Erro ao buscar produtos"
+    });
   }
 }
 
-// CREATE
+/**
+ * CRIAR PRODUTO
+ */
 export async function createProdutoController(req, res) {
   try {
-    const produto = await createProduto(req.body);
-    res.json(produto);
+    const empresaId = req.user?.empresa_id;
+
+    if (!empresaId) {
+      return res.status(400).json({
+        error: "empresa_id não encontrado no token"
+      });
+    }
+
+    const produto = await createProduto(req.body, empresaId);
+
+    return res.json(produto);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Erro ao criar produto" });
+    return res.status(500).json({
+      error: "Erro ao criar produto"
+    });
   }
 }
 
-// UPDATE
+/**
+ * ATUALIZAR PRODUTO
+ */
 export async function updateProdutoController(req, res) {
   try {
-    const produto = await updateProduto(req.params.id, req.body);
-    res.json(produto);
+    const empresaId = req.user?.empresa_id;
+
+    if (!empresaId) {
+      return res.status(400).json({
+        error: "empresa_id não encontrado no token"
+      });
+    }
+
+    const produto = await updateProduto(
+      req.params.id,
+      req.body,
+      empresaId
+    );
+
+    return res.json(produto);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Erro ao atualizar produto" });
+    return res.status(500).json({
+      error: "Erro ao atualizar produto"
+    });
   }
 }
 
-// DELETE
+/**
+ * DELETAR PRODUTO
+ */
 export async function deleteProdutoController(req, res) {
   try {
-    await deleteProduto(req.params.id);
-    res.json({ success: true });
+    const empresaId = req.user?.empresa_id;
+
+    if (!empresaId) {
+      return res.status(400).json({
+        error: "empresa_id não encontrado no token"
+      });
+    }
+
+    await deleteProduto(req.params.id, empresaId);
+
+    return res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Erro ao deletar produto" });
+    return res.status(500).json({
+      error: "Erro ao deletar produto"
+    });
   }
 }

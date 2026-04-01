@@ -1,38 +1,26 @@
-export function calcularEscalonamento(decisao) {
-  const impactoMatch = decisao.impacto?.match(/R\$\s?([\d.]+)/);
-  const impactoValor = impactoMatch ? parseFloat(impactoMatch[1]) : 0;
-
-  const recorrencia = decisao.recorrencia || 0;
+export function calcularEscalonamento(decision) {
+  const { impacto_valor = 0, recorrencia = 0 } = decision;
 
   let nivel = "BAIXO";
-  let acao = "Monitorar situação";
+  let acao_recomendada = "Monitorar situação";
 
-  // CRÍTICO
-  if (impactoValor > 1000 && recorrencia >= 3) {
-    nivel = "CRITICO";
-    acao = "Ação imediata necessária";
-  }
-
-  // ALTO
-  else if (impactoValor > 500 && recorrencia >= 2) {
+  // REGRA PRINCIPAL: impacto financeiro
+  if (impacto_valor >= 1000) {
     nivel = "ALTO";
-    acao = "Intervenção recomendada";
-  }
-
-  // MÉDIO
-  else if (impactoValor > 100) {
+    acao_recomendada = "Ação imediata necessária";
+  } else if (impacto_valor >= 300) {
     nivel = "MEDIO";
-    acao = "Acompanhar de perto";
+    acao_recomendada = "Planejar ação";
   }
 
-  // BAIXO
-  if (decisao.tipo === "oportunidade") {
-    nivel = "BAIXO";
-    acao = "Aproveitar oportunidade";
+  // REGRA DE RECORRÊNCIA (override)
+  if (recorrencia >= 3) {
+    nivel = "CRITICO";
+    acao_recomendada = "Intervenção urgente";
   }
 
   return {
     nivel,
-    acao_recomendada: acao
+    acao_recomendada
   };
 }
