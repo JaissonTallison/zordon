@@ -1,4 +1,5 @@
 import zordonService from "../services/engine.service.js";
+import { montarInteligencia } from "../services/intelligence.service.js";
 
 import {
   listarResultados,
@@ -7,12 +8,10 @@ import {
 } from "../repositories/result.repository.js";
 
 /**
- * 🚀 EXECUTAR ENGINE
+ * EXECUTAR ENGINE
  */
 export async function executarAnalise(req, res) {
   try {
-    console.log("🚀 ZORDON RUN");
-
     const empresaId = req.user?.empresa_id;
 
     if (!empresaId) {
@@ -23,7 +22,6 @@ export async function executarAnalise(req, res) {
 
     const resultado = await zordonService.run({ empresaId });
 
-    // 🔒 proteção extra
     if (!Array.isArray(resultado)) {
       console.error("Resultado inválido:", resultado);
       return res.json([]);
@@ -41,7 +39,7 @@ export async function executarAnalise(req, res) {
 }
 
 /**
- * 📊 RESULTADOS
+ * RESULTADOS (ANTIGO - NÃO MEXER)
  */
 export async function obterResultados(req, res) {
   try {
@@ -67,7 +65,64 @@ export async function obterResultados(req, res) {
 }
 
 /**
- * 📜 HISTÓRICO
+ * 🔥 NOVO: DECISÕES ESTRUTURADAS
+ */
+export async function obterDecisoesEstruturadas(req, res) {
+  try {
+    const empresaId = req.user?.empresa_id;
+
+    if (!empresaId) {
+      return res.status(400).json({
+        error: "empresa_id não encontrado"
+      });
+    }
+
+    const dados = await listarResultados(empresaId);
+
+    const problemas = dados.filter(d =>
+      d.codigo === "PRODUTO_PARADO" ||
+      d.codigo === "PRODUTO_SEM_VENDAS"
+    );
+
+    const oportunidades = dados.filter(d =>
+      d.codigo === "PRODUTO_ALTA_DEMANDA"
+    );
+
+    const alertas = dados.filter(d =>
+      d.codigo === "ESTOQUE_BAIXO"
+    );
+
+    const impacto_total = dados.reduce(
+      (acc, d) => acc + Number(d.impacto_valor || 0),
+      0
+    );
+
+    return res.json({
+      resumo: {
+        impacto_total,
+        total: dados.length,
+        problemas: problemas.length,
+        oportunidades: oportunidades.length,
+        alertas: alertas.length
+      },
+      decisoes: {
+        problemas,
+        oportunidades,
+        alertas
+      }
+    });
+
+  } catch (error) {
+    console.error("Erro ao estruturar decisões:", error);
+
+    return res.status(500).json({
+      error: "Erro ao estruturar decisões"
+    });
+  }
+}
+
+/**
+ * HISTÓRICO
  */
 export async function obterHistorico(req, res) {
   try {
@@ -93,7 +148,7 @@ export async function obterHistorico(req, res) {
 }
 
 /**
- * 🧹 LIMPAR
+ * LIMPAR
  */
 export async function limpar(req, res) {
   try {
@@ -121,7 +176,7 @@ export async function limpar(req, res) {
 }
 
 /**
- * 🔄 ATUALIZAR STATUS
+ * ATUALIZAR STATUS
  */
 export async function atualizarStatusDecision(req, res) {
   try {
@@ -158,6 +213,38 @@ export async function atualizarStatusDecision(req, res) {
 
     return res.status(500).json({
       error: "Erro ao atualizar status"
+    });
+  }
+}
+
+/**
+ * INTELIGÊNCIA
+ */
+export async function obterInteligencia(req, res) {
+  try {
+    const empresaId = req.user?.empresa_id;
+
+    if (!empresaId) {
+      return res.status(400).json({
+        error: "empresa_id não encontrado no token"
+      });
+    }
+
+    const decisions = await zordonService.run({ empresaId });
+    const historico = await listarResultados(empresaId);
+
+    const inteligencia = montarInteligencia({
+      decisions,
+      historico
+    });
+
+    res.json(inteligencia);
+
+  } catch (error) {
+    console.error("Erro intelligence:", error);
+
+    res.status(500).json({
+      error: "Erro ao gerar inteligência"
     });
   }
 }

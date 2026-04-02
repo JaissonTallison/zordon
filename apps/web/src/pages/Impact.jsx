@@ -31,7 +31,7 @@ export default function Impact() {
     return <div className="text-textSecondary">Carregando impacto...</div>;
   }
 
-  // 🔥 KPIs
+  // KPIs
   const total = data.reduce((acc, d) => acc + d.impacto_valor, 0);
 
   const perdas = data
@@ -48,25 +48,30 @@ export default function Impact() {
     )
     .reduce((acc, d) => acc + d.impacto_valor, 0);
 
-  // 🔥 principal
+  // principal
   const principal =
     [...data].sort((a, b) => b.impacto_valor - a.impacto_valor)[0] || null;
 
-  // 🔥 top 5
+  // top 5
   const top = [...data]
     .sort((a, b) => b.impacto_valor - a.impacto_valor)
     .slice(0, 5);
 
-  // 🔥 helper (NÃO muda design, só conteúdo)
+  // helper (NÃO muda design, só conteúdo)
   function getTitulo(d) {
-    return d.produto_nome || d.codigo;
+    return d.produto_nome
+      ? `${d.produto_nome}`
+      : d.codigo.replaceAll("_", " ");
   }
 
   function getDescricao(d) {
     if (d.produto_nome) {
       return `Impacto relacionado a ${d.produto_nome}`;
     }
-    return `Relacionado a ${d.codigo}`;
+    
+    return d.produto_nome
+      ? `${d.produto_nome} está impactando seu resultado`
+      : `Relacionado a ${d.codigo.replaceAll("_", " ")}`;
   }
 
   return (
@@ -75,7 +80,7 @@ export default function Impact() {
       {/* HEADER */}
       <div>
         <h1 className="text-2xl font-bold text-textPrimary">
-          💰 Impacto Financeiro
+           Impacto Financeiro
         </h1>
         <p className="text-textSecondary">
           Onde você está perdendo e ganhando dinheiro agora

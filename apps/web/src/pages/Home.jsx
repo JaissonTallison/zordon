@@ -16,12 +16,8 @@ export default function Home() {
     try {
       const res = await api.post("/engine/executar");
 
-      console.log("🔥 ENGINE RESPONSE:", res.data);
-
-      // BACKEND AGORA RETORNA ARRAY
       const lista = Array.isArray(res.data) ? res.data : [];
 
-      // AGRUPAMENTO NO FRONT
       const agrupado = {
         problemas: lista.filter(d => d.tipo === "problema"),
         alertas: lista.filter(d => d.tipo === "alerta"),
@@ -75,51 +71,57 @@ export default function Home() {
   return (
     <div className="space-y-8">
 
-      {/* HEADER */}
-      <div className="bg-surface p-6 rounded-2xl border border-gray-200 shadow-sm">
-        <h1 className="text-xl font-semibold text-textPrimary">
-          Centro de Decisão
+      {/*  HEADER (MANTÉM GRADIENTE) */}
+      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-2xl shadow-lg">
+        <h1 className="text-2xl font-bold">
+           Centro de decisão
         </h1>
-        <p className="text-textSecondary">
-          Análise baseada em dados reais da operação
+        <p className="text-sm opacity-80">
+          Visão geral da operação baseada nos dados atuais
         </p>
       </div>
 
-      {/*SE NÃO TEM NADA */}
+      {/* SEM DADOS */}
       {!principal && (
         <div className="text-textSecondary">
           Nenhuma decisão encontrada
         </div>
       )}
 
-      {/* DECISÃO PRINCIPAL */}
+      {/*  DECISÃO PRINCIPAL (SUAVE) */}
       {principal && (
-        <div className="bg-surface p-6 rounded-2xl border border-gray-200 shadow-sm space-y-5">
+        <div className="bg-purple-100 border border-purple-200 p-6 rounded-2xl shadow-sm space-y-5">
 
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-2xl font-semibold">
-                {principal.titulo}
+              <h2 className="text-xl font-semibold text-textPrimary">
+                {principal.produto_nome || principal.titulo}
               </h2>
+
+              <p className="text-sm text-textSecondary">
+                {principal.titulo_amigavel || principal.tipo}
+              </p>
             </div>
 
-            <span className="text-xs px-3 py-1 rounded-full bg-purple-100 text-purple-600">
+            <span className="text-xs px-3 py-1 rounded-full bg-purple-100 text-orange-600">
               {principal.tipo}
             </span>
           </div>
 
-          <p>{principal.descricao}</p>
+          <p className="text-sm text-textSecondary">
+            {principal.descricao}
+          </p>
 
-          <div className="bg-gray-50 p-4 rounded-xl">
-            <p className="text-sm">Impacto</p>
-            <p className="text-xl font-bold text-orange-600">
-              R$ {principal.impacto_valor || 0}
+          <div className="bg-white p-4 rounded-xl border">
+            <p className="text-xs text-textSecondary">Impacto</p>
+            <p className="text-lg font-semibold text-orange-600">
+              R$ {Number(principal.impacto_valor || 0).toLocaleString("pt-BR")}
             </p>
           </div>
 
           {principal.recomendacao?.acao && (
-            <div className="bg-purple-50 p-4 rounded-xl">
-              👉 {principal.recomendacao.acao}
+            <div className="bg-orange-100/60 p-4 rounded-xl text-sm text-orange-700">
+               {principal.recomendacao.acao}
             </div>
           )}
 
@@ -143,25 +145,28 @@ function Section({ title, items, atualizar }) {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-3">{title}</h3>
+      <h3 className="text-md font-semibold mb-3 text-textPrimary">{title}</h3>
 
       <div className="space-y-3">
         {items.map((d, i) => (
           <div
             key={i}
-            className="bg-white p-4 rounded-xl border"
+            className="bg-white p-4 rounded-xl border shadow-sm hover:shadow-md transition"
           >
             <div className="flex justify-between">
 
               <div>
-                <p className="font-semibold">{d.titulo}</p>
-                <p className="text-sm text-gray-500">
+                <p className="font-medium text-textPrimary">
+                  {d.produto_nome || d.titulo}
+                </p>
+
+                <p className="text-sm text-textSecondary">
                   {d.descricao}
                 </p>
               </div>
 
-              <p className="text-orange-600 font-bold">
-                R$ {d.impacto_valor || 0}
+              <p className="text-orange-600 font-medium">
+                R$ {Number(d.impacto_valor || 0).toLocaleString("pt-BR")}
               </p>
 
             </div>
@@ -170,14 +175,14 @@ function Section({ title, items, atualizar }) {
 
               <button
                 onClick={() => atualizar(d.id, "RESOLVIDO")}
-                className="text-green-600"
+                className="text-green-600 hover:underline"
               >
                 Resolver
               </button>
 
               <button
                 onClick={() => atualizar(d.id, "IGNORADO")}
-                className="text-red-500"
+                className="text-red-500 hover:underline"
               >
                 Ignorar
               </button>

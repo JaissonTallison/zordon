@@ -21,36 +21,32 @@ import metricsRepository from "../repositories/metrics.repository.js";
 import { calcularEscalonamento } from "../engine/utils/escalationCalculator.js";
 import { normalizarDecisao } from "../engine/utils/normalizer.js";
 
-/**
- * PESO DAS REGRAS
- */
+
 const RULE_WEIGHTS = {
   PRODUTO_PARADO: 1.2,
   ESTOQUE_BAIXO: 1.5,
   PRODUTO_ALTA_DEMANDA: 1.1
 };
 
-/**
- * CORE ZORDON
- */
+
 async function run({ empresaId }) {
   if (!empresaId) {
     throw new Error("empresaId é obrigatório");
   }
 
   try {
-    /**
-     * 1. DADOS
-     */
+    
     const produtos = await findAllProdutos(empresaId);
     const vendas = await vendaRepository.getAll(empresaId);
 
-    /**
-     * 2. ENGINE BASE
-     */
+    // MAPA DE PRODUTOS (NOME)
+    const produtosMap = new Map(
+      produtos.map(p => [p.id, p.nome])
+    );
+
     let decisions = await engine({ produtos, vendas });
 
-    // 🔥 NORMALIZA RETORNO (engine pode vir agrupado)
+
     if (!Array.isArray(decisions)) {
       decisions = [
         ...(decisions?.problemas || []),
@@ -62,23 +58,17 @@ async function run({ empresaId }) {
 
     if (!Array.isArray(decisions)) decisions = [];
 
-    /**
-     * 3. NORMALIZAÇÃO (CRÍTICO)
-     */
+
     decisions = decisions.map(normalizarDecisao);
 
-    /**
-     * 🔥 GARANTE NÚMEROS (EVITA BUG DO "0")
-     */
+
     decisions = decisions.map((d) => ({
       ...d,
       impacto_valor: Number(d.impacto_valor || 0),
       score: Number(d.score || 0)
     }));
 
-    /**
-     * 4. ENRIQUECIMENTO
-     */
+
     decisions = await Promise.all(
       decisions.map(async (d) => {
         try {
@@ -108,6 +98,7 @@ async function run({ empresaId }) {
 
           return {
             ...d,
+            produto_nome: produtosMap.get(d.produto_id) || "Produto desconhecido", // 🔥 FIX PRINCIPAL
             recorrencia,
             mensagem_recorrencia:
               recorrencia > 1
@@ -120,23 +111,19 @@ async function run({ empresaId }) {
           };
         } catch (err) {
           console.error("Erro enriquecendo decisão:", err);
-          return d; // fallback
+          return d;
         }
       })
     );
 
-    /**
-     * 5. STRATEGY (BLINDADO)
-     */
+
     try {
       decisions = strategyEngine(decisions);
     } catch (err) {
       console.error("Erro strategyEngine:", err);
     }
 
-    /**
-     * 6. ALERTAS (NÃO QUEBRA)
-     */
+
     let alerts = [];
     try {
       alerts = alertEngine(decisions);
@@ -144,20 +131,14 @@ async function run({ empresaId }) {
       console.error("Erro alertEngine:", err);
     }
 
-    /**
-     * 7. ORDENAÇÃO FINAL
-     */
+
     decisions.sort((a, b) => (b.score_final || 0) - (a.score_final || 0));
 
-    /**
-     * 8. HISTÓRICO + ANALYTICS (SEGURO)
-     */
+    
     let historico = [];
     try {
       historico = await listarResultados(empresaId);
-    } catch (err) {
-      console.error("Erro ao buscar histórico:", err);
-    }
+    } catch (err) {}
 
     let tendencias = [];
     let previsoes = [];
@@ -167,24 +148,17 @@ async function run({ empresaId }) {
       tendencias = analisarTendencias(historico);
       previsoes = preverProblemas(decisions);
       cenarios = simularCenarios(decisions);
-    } catch (err) {
-      console.error("Erro analytics:", err);
-    }
+    } catch (err) {}
 
-    /**
-     * 9. PERSISTÊNCIA
-     */
+
+
     if (decisions.length > 0) {
       try {
         await salvarResultados(decisions, empresaId);
-      } catch (err) {
-        console.error("Erro ao salvar resultados:", err);
-      }
+      } catch (err) {}
     }
 
-    /**
-     * 10. METADATA OCULTA
-     */
+
     Object.defineProperty(decisions, "_meta", {
       value: {
         alerts,
@@ -203,31 +177,19 @@ async function run({ empresaId }) {
   }
 }
 
-/**
- * RESULTADOS
- */
-async function getResultados({ empresaId }) {
-  if (!empresaId) {
-    throw new Error("empresaId é obrigatório");
-  }
 
+async function getResultados({ empresaId }) {
+  if (!empresaId) throw new Error("empresaId é obrigatório");
   return await listarResultados(empresaId);
 }
 
-/**
- * LIMPAR
- */
-async function limparResultadosService({ empresaId }) {
-  if (!empresaId) {
-    throw new Error("empresaId é obrigatório");
-  }
 
+async function limparResultadosService({ empresaId }) {
+  if (!empresaId) throw new Error("empresaId é obrigatório");
   await limparResultados(empresaId);
 }
 
-/**
- * CRON
- */
+
 export async function executarEngineAutomatico(empresaId = 1) {
   try {
     const decisions = await run({ empresaId });
@@ -240,7 +202,7 @@ export async function executarEngineAutomatico(empresaId = 1) {
     console.log(
       `ZORDON executado | Impacto: R$ ${impacto} | Decisões: ${decisions.length}`
     );
-
+    
   } catch (error) {
     console.error("Erro no cron:", error);
   }
@@ -249,5 +211,5 @@ export async function executarEngineAutomatico(empresaId = 1) {
 export default {
   run,
   getResultados,
-  limparResultados: limparResultadosService
+  limparResultados: limparResultadosService,
 };

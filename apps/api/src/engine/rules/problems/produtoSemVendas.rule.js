@@ -10,7 +10,7 @@ export default function produtoSemVendasRule({ produtos = [], vendas = [] }) {
       const valor = Number(produto.valor || 0);
       const estoque = Number(produto.estoque || 0);
 
-      // 🔥 fallback inteligente REAL
+      // fallback inteligente REAL
       let impacto = valor * estoque;
 
       if (impacto <= 0) {

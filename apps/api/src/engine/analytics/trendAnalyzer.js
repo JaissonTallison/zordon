@@ -1,75 +1,24 @@
-/**
- * Trend Analyzer do ZORDON
- * Analisa histórico de resultados e identifica tendências
- */
-
-export function analisarTendencias(resultados = []) {
-  if (!Array.isArray(resultados)) {
-    throw new Error("resultados deve ser um array");
-  }
-
+export function analisarTendencias(historico = []) {
   const tendencias = [];
 
-  const agrupadoPorCodigo = agruparPorCodigo(resultados);
+  const mapa = {};
 
-  for (const codigo in agrupadoPorCodigo) {
-    const lista = agrupadoPorCodigo[codigo];
+  for (const h of historico) {
+    mapa[h.codigo] = (mapa[h.codigo] || 0) + 1;
+  }
 
-    const tendencia = calcularTendencia(lista);
-
-    if (tendencia) {
+  for (const codigo in mapa) {
+    if (mapa[codigo] >= 3) {
       tendencias.push({
-        codigo,
-        ...tendencia
+        tipo: "tendencia",
+        titulo: "Padrão recorrente identificado",
+        descricao: `${codigo} aparece com frequência`,
+        intensidade: mapa[codigo],
+        impacto: mapa[codigo] * 100
       });
     }
   }
 
   return tendencias;
-}
-
-/**
- * Agrupa por tipo de decisão
- */
-function agruparPorCodigo(resultados) {
-  return resultados.reduce((acc, item) => {
-    if (!acc[item.codigo]) {
-      acc[item.codigo] = [];
-    }
-    acc[item.codigo].push(item);
-    return acc;
-  }, {});
-}
-
-/**
- * Detecta tendência
- */
-function calcularTendencia(lista) {
-  if (lista.length < 3) return null;
-
-  const ultimos = lista.slice(-3);
-
-  const impactos = ultimos.map((i) => Number(i.impacto_valor || 0));
-
-  const crescente =
-    impactos[0] < impactos[1] && impactos[1] < impactos[2];
-
-  const decrescente =
-    impactos[0] > impactos[1] && impactos[1] > impactos[2];
-
-  if (crescente) {
-    return {
-      tipo: "piora",
-      descricao: "Impacto financeiro aumentando ao longo do tempo"
-    };
-  }
-
-  if (decrescente) {
-    return {
-      tipo: "melhora",
-      descricao: "Impacto financeiro reduzindo ao longo do tempo"
-    };
-  }
-
-  return null;
+  
 }

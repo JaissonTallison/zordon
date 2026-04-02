@@ -18,7 +18,7 @@ export function normalizarDecisao(d) {
 
     prioridade: normalizarPrioridade(d.prioridade),
 
-    // 🚨 GARANTE NÚMERO REAL
+    // GARANTE NÚMERO REAL
     impacto_valor: Number(impactoNumerico || 0),
 
     score: Number(d.score || 0),

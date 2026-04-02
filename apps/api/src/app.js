@@ -31,6 +31,7 @@ app.use("/api/decisions", autenticar, decisionRoutes);
 app.use("/api/resultados", autenticar, resultadosRoutes);
 
 
+
 // health check
 app.get("/", (req, res) => {
   res.send("ZORDON API rodando...");

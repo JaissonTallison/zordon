@@ -7,13 +7,13 @@ export default function Intelligence() {
 
   async function load() {
     try {
-      const res = await api.post("/engine/executar");
+      const res = await api.get("/engine/intelligence");
 
-      console.log("INTELLIGENCE DATA:", res.data); // 🔥 DEBUG
+      console.log("INTELLIGENCE:", res.data);
 
       setData(res.data);
     } catch (err) {
-      console.error("Erro ao carregar intelligence:", err);
+      console.error("Erro ao carregar inteligência:", err);
     } finally {
       setLoading(false);
     }
@@ -31,181 +31,156 @@ export default function Intelligence() {
     );
   }
 
-  const tendencias = data?.tendencias || [];
-  const previsoes = data?.previsoes || [];
-  const cenarios = data?.cenarios || [];
-  const decisions = data?.decisions || [];
+  if (!data) {
+    return (
+      <div className="text-textSecondary">
+        Nenhum dado disponível
+      </div>
+    );
+  }
 
-  const lista = [...tendencias, ...previsoes, ...cenarios];
-
-  // 🔥 PRIORIDADE DO CARD PRINCIPAL
-  const principal =
-    previsoes[0] ||
-    tendencias[0] ||
-    cenarios[0] ||
-    decisions[0] ||
-    null;
+  const { resumo, insights, top, recomendacao_principal } = data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
 
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-semibold text-textPrimary">
+        <h1 className="text-2xl font-bold text-textPrimary">
           Inteligência
         </h1>
         <p className="text-textSecondary">
-          Análise baseada no comportamento do sistema
+          Análise estratégica do sistema
         </p>
       </div>
 
-      {/* 🔥 CARD PRINCIPAL (PADRÃO HOME) */}
-      {principal && (
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+      {/* RESUMO */}
+      <div className="grid grid-cols-4 gap-4">
 
-          <div className="flex justify-between items-center mb-2">
-            <p className="text-sm text-textSecondary">
-              Insight mais importante agora
-            </p>
+        <div className="bg-white p-4 rounded-xl border">
+          <p className="text-xs text-gray-500">Impacto total</p>
+          <p className="text-xl font-bold text-orange-500">
+            R$ {Number(resumo?.impacto_total || 0).toLocaleString("pt-BR")}
+          </p>
+        </div>
 
-            <span className="text-xs px-2 py-1 rounded bg-purple-100 text-purple-600">
-              IA
-            </span>
-          </div>
+        <div className="bg-white p-4 rounded-xl border">
+          <p className="text-xs text-gray-500">Problemas</p>
+          <p className="text-xl font-bold">
+            {resumo?.problemas || 0}
+          </p>
+        </div>
 
-          <h2 className="text-xl font-semibold text-textPrimary">
-            {principal.titulo || principal.codigo || "Análise"}
-          </h2>
+        <div className="bg-white p-4 rounded-xl border">
+          <p className="text-xs text-gray-500">Oportunidades</p>
+          <p className="text-xl font-bold">
+            {resumo?.oportunidades || 0}
+          </p>
+        </div>
 
-          <p className="text-textSecondary">
-            {principal.descricao || "Insight gerado pelo sistema"}
+        <div className="bg-white p-4 rounded-xl border">
+          <p className="text-xs text-gray-500">Alertas</p>
+          <p className="text-xl font-bold">
+            {resumo?.alertas || 0}
+          </p>
+        </div>
+
+      </div>
+
+      {/* RECOMENDAÇÃO PRINCIPAL */}
+      {recomendacao_principal && (
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-2xl shadow-lg">
+
+          <p className="text-sm opacity-80">
+            Principal recomendação
           </p>
 
-          {/* IMPACTO */}
-          <div className="bg-gray-100 p-4 rounded-xl mt-4">
-            <p className="text-sm text-textSecondary">
-              Impacto estimado
-            </p>
+          <h2 className="text-xl font-bold mt-2">
+            {recomendacao_principal.titulo || recomendacao_principal.codigo}
+          </h2>
 
-            <p className="text-orange-500 font-semibold">
-              R$ {Number(principal.impacto_valor || principal.impacto || 0)
-                .toLocaleString("pt-BR")}
-            </p>
-          </div>
+          <p className="opacity-80 mt-1">
+            {recomendacao_principal.descricao}
+          </p>
 
-          {/* AÇÃO */}
-          <div className="bg-gray-100 p-4 rounded-xl mt-3">
-            <p className="text-sm text-textSecondary">
-              Ação recomendada
-            </p>
-
-            <p className="text-sm text-textPrimary">
-              {principal.recomendacao?.acao ||
-                principal.recomendacao ||
-                "Aguardar mais dados"}
-            </p>
-          </div>
-
-          {/* BOTÕES */}
-          <div className="flex items-center gap-4 mt-4">
-            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg">
-              Executar ação
-            </button>
-
-            <span className="text-green-600 text-sm cursor-pointer">
-              Aplicar
-            </span>
-
-            <span className="text-red-500 text-sm cursor-pointer">
-              Ignorar
-            </span>
+          <div className="mt-4 text-lg font-semibold">
+            R$ {Number(recomendacao_principal.impacto_valor || 0)
+              .toLocaleString("pt-BR")}
           </div>
 
         </div>
       )}
 
-      {/* 🔥 LISTA (PADRÃO PROBLEMAS) */}
-      <div className="space-y-4">
-
-        <h2 className="font-semibold text-textPrimary">
-          Insights gerados
+      {/* TOP DECISÕES */}
+      <div>
+        <h2 className="font-semibold mb-3 text-textPrimary">
+          Top decisões
         </h2>
 
-        {/* 🚨 FALLBACK INTELIGENTE */}
-        {lista.length === 0 ? (
-          decisions.length === 0 ? (
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 text-center">
-              <p className="text-textSecondary">
-                Ainda não há dados suficientes
-              </p>
+        <div className="space-y-3">
 
-              <p className="text-sm text-gray-400 mt-1">
-                O Zordon precisa de mais movimentação para gerar inteligência
-              </p>
-            </div>
-          ) : (
-            decisions.map((d) => (
-              <div
-                key={d.id}
-                className="bg-white p-4 rounded-xl border border-gray-100 flex justify-between"
-              >
-                <div>
-                  <p className="font-medium text-textPrimary">
-                    {d.codigo}
-                  </p>
-
-                  <p className="text-sm text-textSecondary">
-                    Produto ID: {d.produto_id}
-                  </p>
-
-                  <div className="mt-2">
-                    <span className="text-green-600 text-sm mr-2 cursor-pointer">
-                      Aplicar
-                    </span>
-                    <span className="text-red-500 text-sm cursor-pointer">
-                      Ignorar
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-orange-500 font-semibold">
-                  R$ {Number(d.impacto_valor || 0).toLocaleString("pt-BR")}
-                </div>
-              </div>
-            ))
-          )
-        ) : (
-          lista.map((item, i) => (
+          {top?.map((d, i) => (
             <div
               key={i}
-              className="bg-white p-4 rounded-xl border border-gray-100 flex justify-between"
+              className="bg-white p-4 rounded-xl border flex justify-between items-center"
             >
               <div>
-                <p className="font-medium text-textPrimary">
-                  {item.titulo || "Insight"}
+                <p className="font-medium">
+                  #{i + 1} {d.titulo || d.codigo}
                 </p>
-
-                <p className="text-sm text-textSecondary">
-                  {item.descricao}
+                <p className="text-xs text-gray-500">
+                  {d.descricao}
                 </p>
-
-                <div className="mt-2">
-                  <span className="text-green-600 text-sm mr-2 cursor-pointer">
-                    Aplicar
-                  </span>
-                  <span className="text-red-500 text-sm cursor-pointer">
-                    Ignorar
-                  </span>
-                </div>
               </div>
 
-              <div className="text-orange-500 font-semibold">
-                R$ {Number(item.impacto || 0).toLocaleString("pt-BR")}
+              <div className="text-orange-500 font-bold">
+                R$ {Number(d.impacto_valor || 0).toLocaleString("pt-BR")}
               </div>
             </div>
-          ))
-        )}
+          ))}
 
+        </div>
+      </div>
+
+      {/* INSIGHTS */}
+      <div>
+        <h2 className="font-semibold mb-3 text-textPrimary">
+          Insights
+        </h2>
+
+        <div className="space-y-3">
+
+          {[...(insights?.previsoes || []),
+            ...(insights?.tendencias || []),
+            ...(insights?.cenarios || [])].map((item, i) => (
+            <div
+              key={i}
+              className="bg-white p-5 rounded-xl border"
+            >
+              <p className="font-semibold">
+                {item.titulo || item.tipo}
+              </p>
+
+              <p className="text-sm text-gray-500 mt-1">
+                {item.descricao}
+              </p>
+
+              {item.impacto && (
+                <div className="mt-3 text-orange-500 font-bold">
+                  R$ {Number(item.impacto).toLocaleString("pt-BR")}
+                </div>
+              )}
+
+              {item.confianca && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Confiança: {Math.round(item.confianca * 100)}%
+                </p>
+              )}
+
+            </div>
+          ))}
+
+        </div>
       </div>
 
     </div>

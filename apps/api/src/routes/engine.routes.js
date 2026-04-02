@@ -5,18 +5,22 @@ import {
   obterResultados,
   limpar,
   obterHistorico,
-  atualizarStatusDecision
+  atualizarStatusDecision,
+  obterInteligencia,
+  obterDecisoesEstruturadas
 } from "../controllers/engine.controller.js";
 
-import { autenticar } from "../middlewares/auth.middleware.js";
+
 
 const router = express.Router();
 
-router.use(autenticar);
+
 
 router.post("/executar", executarAnalise);
 router.get("/resultados", obterResultados);
 router.get("/historico", obterHistorico);
+router.get("/intelligence", obterInteligencia);
+router.get("/decisions", obterDecisoesEstruturadas); 
 router.delete("/resultados", limpar);
 router.patch("/status/:id", atualizarStatusDecision);
 
