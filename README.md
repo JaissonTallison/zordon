@@ -8,7 +8,12 @@ Sistema de inteligência operacional para análise contínua de dados empresaria
 
 O ZORDON é um sistema projetado para transformar dados operacionais em decisões estruturadas, atuando de forma contínua sobre o ambiente do negócio.
 
-Diferente de soluções tradicionais de Business Intelligence, que dependem da interpretação humana, o ZORDON propõe um modelo ativo, onde os dados são processados automaticamente para identificar problemas e sugerir ações.
+Diferente de ferramentas tradicionais de Business Intelligence, que exigem interpretação humana, o ZORDON atua de forma ativa:
+
+- Analisa dados automaticamente
+- Identifica problemas
+- Calcula impacto financeiro
+- Sugere ações
 
 ---
 
@@ -16,10 +21,10 @@ Diferente de soluções tradicionais de Business Intelligence, que dependem da i
 
 Empresas possuem dados, mas enfrentam dificuldades em:
 
-* Identificar problemas operacionais em tempo real
-* Priorizar ações com base em impacto financeiro
-* Transformar dados em decisões práticas
-* Reduzir dependência de análise manual
+- Identificar problemas operacionais em tempo real  
+- Priorizar ações com base em impacto financeiro  
+- Transformar dados em decisões práticas  
+- Reduzir dependência de análise manual  
 
 ---
 
@@ -27,169 +32,181 @@ Empresas possuem dados, mas enfrentam dificuldades em:
 
 O ZORDON atua como um sistema de inteligência operacional que:
 
-* Monitora dados continuamente
-* Detecta padrões e anomalias
-* Identifica problemas operacionais
-* Avalia impacto financeiro
-* Recomenda ações estruturadas
+- Monitora dados continuamente  
+- Detecta padrões e anomalias  
+- Identifica problemas operacionais  
+- Avalia impacto financeiro  
+- Recomenda ações estruturadas  
 
 ---
 
 # 4. Funcionamento
 
-O sistema opera por meio de um ciclo contínuo:
+Fluxo principal:
 
-```text
-Entrada de Dados → Processamento → Motor de Regras → Análise → Problemas → Priorização → Recomendação
-```
+Entrada de Dados -> Engine -> Regras -> Decisoes -> Priorizacao -> Acao
+
 
 ---
 
 # 5. Arquitetura do Sistema
 
-##  Modelo Arquitetural
+## Modelo
 
-O sistema segue o padrão:
+Monolito modular com separação por responsabilidade.
 
- **Monolito Modular com separação por responsabilidade**
+## Estrutura
 
----
+zordon/
+    apps/
+       api/ -> Backend (Node.js)
+       web/ -> Frontend (React)
+    docs/
+    infra/
+
+
 
 ## Camadas
 
 ### Interface
-
 Responsável pela interação com o usuário.
 
-### API (Application Layer)
-
-Responsável pela comunicação e orquestração.
+### API
+Orquestração das operações.
 
 ### Core (Domínio)
-
-Responsável pela lógica de negócio:
-
-* engine de decisão
-* motor de regras
-* análise de dados
+- Engine de decisão
+- Motor de regras
+- Estratégia
+- Analytics
 
 ### Data Layer
-
-Responsável pela persistência.
-
----
-
-## Estrutura Física
-
-```text
-zordon/
-├── zordon-api/
-├── zordon-data/
-├── zordon-interface/
-├── zordon-infra/
-├── docs/
-```
+Persistência (PostgreSQL)
 
 ---
 
-# 6. Núcleo do Sistema (Core)
+# 6. Núcleo do Sistema
 
-O núcleo do ZORDON é composto por:
+## Engine de Decisão
+Executa análise completa dos dados.
 
-## Engine de decisão
+## Motor de Regras
+Executa regras como:
 
-Interpreta e direciona o fluxo de análise.
+- Produto sem vendas
+- Produto parado
+- Estoque baixo
+- Alta demanda
 
-## Motor de regras
+## Strategy Layer
+Simula comportamento de gestor:
+- prioriza decisões
+- ajusta relevância
 
-Executa regras determinísticas baseadas em lógica de negócio.
-
-## Módulo de análise
-
-Processa dados e identifica padrões.
+## Analytics
+- Tendências
+- Previsões
+- Simulação de cenários
 
 ---
 
 # 7. Modelagem de Dados
 
-O sistema utiliza banco relacional (PostgreSQL) com entidades principais:
+Banco: PostgreSQL
 
-* Produtos
-* Vendas
-* Análises
-* Problemas
+### Entidades principais:
 
-## Relacionamentos:
+- empresas
+- users
+- produtos
+- vendas
+- resultados
+- decision_feedback
+- alertas
+- actions
 
-* Produto → Vendas (1:N)
-* Análise → Problemas (1:N)
-* Produto → Problemas (1:N)
+### Relacionamentos:
+
+- Produto → Vendas (1:N)
+- Produto → Resultados (1:N)
+- Empresa → Tudo (multi-tenant)
 
 ---
 
 # 8. Modelo de Regras
 
-As regras seguem a estrutura:
+Estrutura padrão:
 
-Condição + Contexto + Impacto + Recomendação
+Condicao + Contexto + Impacto + Recomendacao
 
-## Exemplo:
 
-* Condição: Produto sem venda
-* Contexto: Estoque elevado
-* Impacto: Capital imobilizado
-* Recomendação: Ajuste de estratégia comercial
+Exemplo:
 
----
-
-# 9. Entrada e Processamento de Dados
-
-## Fontes:
-
-* ERP
-* E-commerce
-* Planilhas
-* Inserção manual
-
-## Tipos:
-
-* Dados estruturados
-* Dados históricos
-* Dados temporais
+- Condição: Produto sem vendas  
+- Impacto: Capital parado  
+- Recomendação: Criar campanha  
 
 ---
 
-# 10. Níveis de Informação
+# 9. Estado Atual do Sistema (IMPLEMENTADO)
 
-## Operacional
+## Backend
 
-Dados brutos
+✔ Engine completa funcionando  
+✔ Motor de regras modular (filesystem-based)  
+✔ Sistema de impacto financeiro  
+✔ Persistência de decisões  
+✔ Recorrência de problemas  
+✔ Sistema de status (PENDENTE, RESOLVIDO, IGNORADO)  
+✔ API protegida com JWT  
 
-## Analítico
+## Frontend
 
-Interpretação
+✔ Dashboard de decisões  
+✔ Tela de impacto financeiro  
+✔ Ranking de impacto  
+✔ Visualização por prioridade  
+✔ Integração com API  
 
-## Estratégico
+## Infraestrutura
 
-Decisão
+✔ Docker configurado  
+✔ PostgreSQL em container  
+✔ Estrutura pronta para deploy  
 
 ---
 
-# 11. Nicho de Aplicação
+# 10. Funcionalidades Atuais
+
+- Execução manual da engine  
+- Detecção de problemas operacionais  
+- Cálculo de impacto financeiro  
+- Ranking de decisões  
+- Persistência histórica  
+- Interface visual com dados reais  
+
+---
+
+# 11. Níveis de Informação
+
+### Operacional
+Dados brutos (produtos, vendas)
+
+### Analítico
+Problemas detectados
+
+### Estratégico
+Decisões acionáveis
+
+---
+
+# 12. Nicho de Aplicação
 
 Foco inicial:
 
- Pequenas e médias empresas do varejo
-
----
-
-# 12. Modelo de Negócio
-
-SaaS baseado em assinatura:
-
-* Básico
-* Intermediário
-* Avançado
+- Pequenas e médias empresas
+- Varejo
+- E-commerce
 
 ---
 
@@ -197,106 +214,138 @@ SaaS baseado em assinatura:
 
 O ZORDON diferencia-se por:
 
-* Execução contínua
-* Decisão estruturada
-* Regras explicáveis
-* Foco em ação
+- Execução contínua  
+- Decisão estruturada  
+- Impacto financeiro real  
+- Foco em ação (não só análise)  
 
 ---
 
 # 14. Segurança
 
-* JWT
-* Controle de acesso
-* Isolamento de dados
+- Autenticação via JWT  
+- Isolamento por empresa (multi-tenant ready)  
+- Controle de acesso por usuário  
 
 ---
 
 # 15. Stack Tecnológica
 
 ## Backend
-
-* Node.js
-* Express.js
+- Node.js
+- Express
 
 ## Banco
-
-* PostgreSQL
+- PostgreSQL
 
 ## Acesso a dados
+- node-postgres (SQL direto)
 
-* node-postgres (SQL direto)
+## Frontend
+- React
+- Tailwind CSS
+
+## Infra
+- Docker
+- Docker Compose
+
+## Versionamento
+- Git + GitHub
+
+---
+
+# 16. Execução
+
+## Backend
+
+cd apps/api
+npm install
+npm run dev
 
 ## Frontend
 
-* React
-* Tailwind CSS
+cd apps/web
+npm install
+npm run dev
 
-## Infraestrutura
-
-* Docker
-* Docker Compose
-
-## Versionamento
-
-* Git
-* GitHub
-
-## Automação
-
-* node-cron
-
-## Futuro
-
-* Redis (cache)
-* Integrações externas
-* IA generativa
 
 ---
 
-# 16. Processamento Contínuo
+# 17. Roadmap (PRÓXIMOS PASSOS)
 
-O sistema executa análises automaticamente:
+## Curto prazo
 
-* via cron jobs
-* detecção de problemas
-* geração de alertas
+- Ações automáticas (executar decisões)
+- Botão "resolver" no frontend
+- Feedback de decisões (aprendizado)
+- Melhorar descrição das decisões
 
----
+## Médio prazo
 
-# 17. Evolução do Sistema
+- Sistema de notificações
+- Dashboard executivo completo
+- Agrupamento inteligente de decisões
+- Métricas de performance
 
-* Personalização de regras
-* Multi-tenant
-* Integração com APIs externas
-* Aprendizado baseado em histórico
+## Longo prazo
 
----
-
-# 18. Execução
-
-```bash
-cd zordon-api
-node server.js
-```
+- IA para geração de estratégias
+- Integração com ERP
+- Sistema de recomendação avançado
+- Automação completa (self-driving business)
 
 ---
 
-# 19. Desenvolvedor
+# 18. Modelo de Negócio
 
-Jaisson Tallison, Iara, Heverton e Fernando.
+SaaS baseado em assinatura:
 
----
-
-# 20. Status
-
- Em desenvolvimento
+- Plano Básico
+- Plano Profissional
+- Plano Enterprise
 
 ---
 
-# 21. Conclusão
+# 19. Processamento Contínuo
 
-O ZORDON propõe uma abordagem ativa para análise de dados empresariais, transformando informações em decisões acionáveis e contribuindo para eficiência operacional.
+O sistema suporta execução automática via:
 
+- cron jobs
+- análise periódica
+- geração de alertas
 
-Use esse contexto como base do projeto zordon e nao desvie da arquitetura e objetivo.
+---
+
+# 20. Status do Projeto
+
+🚧 Em desenvolvimento avançado
+
+- Core funcional
+- Backend estável
+- Frontend evoluindo
+- Pronto para validação real
+
+---
+
+# 21. Desenvolvedores
+
+- Jaisson Tallison  
+- Iara  
+- Heverton  
+- Fernando  
+
+---
+
+# 22. Conclusão
+
+O ZORDON representa uma mudança de paradigma:
+
+De:
+→ sistemas que mostram dados  
+
+Para:
+→ sistemas que tomam decisões  
+
+O objetivo é reduzir a dependência humana na análise operacional e transformar dados em ação direta.
+
+---
