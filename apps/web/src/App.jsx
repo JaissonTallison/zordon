@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Intelligence from "./pages/Intelligence";
 import Settings from "./pages/Setting";
+import Rules from "./pages/Rules";
 
 /**
  *  PROTEÇÃO DE ROTAS
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="produtos" element={<Products />} />
           <Route path="impacto" element={<Impact />} />
           <Route path="inteligencia" element={<Intelligence />} />
+          <Route path="regras"         element={<Rules />} />
           <Route path="configuracoes" element={<Settings />} />
 
 

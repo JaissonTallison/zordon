@@ -1,5 +1,7 @@
 import zordonService from "../services/engine.service.js";
 import { montarInteligencia } from "../services/intelligence.service.js";
+import { calcularScoreOperacional } from "../services/score.service.js";
+import { emitirStatusAtualizado } from "../services/socket.service.js";
 
 import {
   listarResultados,
@@ -204,6 +206,9 @@ export async function atualizarStatusDecision(req, res) {
 
     await atualizarStatusRepository(id, status, empresaId);
 
+    // Notificar clientes via WebSocket
+    try { emitirStatusAtualizado(empresaId, { id, status }); } catch {}
+
     return res.json({
       sucesso: true
     });
@@ -214,6 +219,22 @@ export async function atualizarStatusDecision(req, res) {
     return res.status(500).json({
       error: "Erro ao atualizar status"
     });
+  }
+}
+
+/**
+ * SCORE OPERACIONAL (0–100)
+ */
+export async function obterScore(req, res) {
+  try {
+    const empresaId = req.user?.empresa_id;
+    if (!empresaId) return res.status(400).json({ error: "empresa_id não encontrado" });
+
+    const score = await calcularScoreOperacional(empresaId);
+    return res.json(score);
+  } catch (error) {
+    console.error("Erro score:", error);
+    return res.status(500).json({ error: "Erro ao calcular score operacional" });
   }
 }
 

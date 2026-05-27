@@ -1,4 +1,5 @@
 import engine from "../engine/engine.js";
+import avaliarRegrasDB from "../engine/ruleEvaluator.js";
 import strategyEngine from "../engine/strategy/strategyEngine.js";
 import alertEngine from "../engine/alerts/alertEngine.js";
 
@@ -8,6 +9,7 @@ import { simularCenarios } from "../engine/analytics/scenarioSimulator.js";
 
 import { findAllProdutos } from "../repositories/produto.repository.js";
 import vendaRepository from "../repositories/venda.repository.js";
+import { listarRegras } from "../repositories/regras.repository.js";
 
 import {
   salvarResultados,
@@ -20,6 +22,12 @@ import metricsRepository from "../repositories/metrics.repository.js";
 
 import { calcularEscalonamento } from "../engine/utils/escalationCalculator.js";
 import { normalizarDecisao } from "../engine/utils/normalizer.js";
+import {
+  emitirEngineExecutado,
+  emitirAlertaCritico,
+  emitirScore,
+} from "./socket.service.js";
+import { calcularScoreOperacional } from "./score.service.js";
 
 
 const RULE_WEIGHTS = {
@@ -44,8 +52,25 @@ async function run({ empresaId }) {
       produtos.map(p => [p.id, p.nome])
     );
 
+    // ── Regras hardcoded (file-based) ──────────────────────────
     let decisions = await engine({ produtos, vendas });
 
+    // ── Regras dinâmicas (DB) ───────────────────────────────────
+    try {
+      const regrasDB = await listarRegras(empresaId, { apenasAtivas: true });
+      if (regrasDB.length > 0) {
+        const decisoesDB = await avaliarRegrasDB(regrasDB, { produtos, vendas });
+        if (Array.isArray(decisoesDB) && decisoesDB.length > 0) {
+          if (Array.isArray(decisions)) {
+            decisions = [...decisions, ...decisoesDB];
+          } else {
+            decisions = decisoesDB;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[engine] Regras DB indisponíveis (tabela criada?):", err.message);
+    }
 
     if (!Array.isArray(decisions)) {
       decisions = [
@@ -168,6 +193,30 @@ async function run({ empresaId }) {
       },
       enumerable: false
     });
+
+    // ── Emitir eventos WebSocket ────────────────────────────────
+    try {
+      const impacto_total = decisions.reduce((s, d) => s + Number(d.impacto_valor || 0), 0);
+      const criticos      = decisions.filter((d) => d.prioridade === "CRITICA").length;
+
+      emitirEngineExecutado(empresaId, {
+        total: decisions.length,
+        impacto_total,
+        criticos,
+      });
+
+      // Alertas críticos individuais
+      decisions
+        .filter((d) => d.prioridade === "CRITICA")
+        .forEach((d) => emitirAlertaCritico(empresaId, d));
+
+      // Score atualizado
+      calcularScoreOperacional(empresaId)
+        .then((score) => emitirScore(empresaId, score))
+        .catch(() => {});
+    } catch (err) {
+      // não bloqueia se socket não iniciado
+    }
 
     return decisions;
 

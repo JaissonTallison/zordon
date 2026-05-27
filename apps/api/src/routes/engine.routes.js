@@ -7,7 +7,8 @@ import {
   obterHistorico,
   atualizarStatusDecision,
   obterInteligencia,
-  obterDecisoesEstruturadas
+  obterDecisoesEstruturadas,
+  obterScore,
 } from "../controllers/engine.controller.js";
 
 
@@ -16,12 +17,13 @@ const router = express.Router();
 
 
 
-router.post("/executar", executarAnalise);
-router.get("/resultados", obterResultados);
-router.get("/historico", obterHistorico);
-router.get("/intelligence", obterInteligencia);
-router.get("/decisions", obterDecisoesEstruturadas); 
+router.post("/executar",   executarAnalise);
+router.get("/resultados",  obterResultados);
+router.get("/historico",   obterHistorico);
+router.get("/intelligence",obterInteligencia);
+router.get("/decisions",   obterDecisoesEstruturadas);
+router.get("/score",       obterScore);
 router.delete("/resultados", limpar);
-router.patch("/status/:id", atualizarStatusDecision);
+router.patch("/status/:id",  atualizarStatusDecision);
 
 export default router;

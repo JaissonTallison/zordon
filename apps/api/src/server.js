@@ -1,8 +1,9 @@
+import { createServer } from "http";
 import app from "./app.js";
 import dotenv from "dotenv";
 
 import { conectarDB } from "./config/database.js";
-import { iniciarCronZordon } from "./cron/engine.cron.js";
+import { inicializarSocket } from "./services/socket.service.js";
 
 dotenv.config();
 
@@ -16,12 +17,16 @@ async function startServer() {
     // Conectar ao banco
     await conectarDB();
 
-    // Subir servidor
-    app.listen(PORT, () => {
-      console.log(`Servidor rodando em http://localhost:${PORT}`);
+    // Criar servidor HTTP (necessário para Socket.io)
+    const httpServer = createServer(app);
 
-      // Iniciar cron do ZORDON
-      // iniciarCronZordon();
+    // Inicializar WebSocket
+    inicializarSocket(httpServer);
+
+    // Subir servidor
+    httpServer.listen(PORT, () => {
+      console.log(`✓ ZORDON API em http://localhost:${PORT}`);
+      console.log(`✓ WebSocket em ws://localhost:${PORT}/ws`);
     });
 
   } catch (error) {

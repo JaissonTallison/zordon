@@ -10,7 +10,7 @@ export async function findAllProdutos(empresaId) {
 
   const result = await pool.query(
     `
-    SELECT id, nome, estoque, minimo, empresa_id, criado_em
+    SELECT id, nome, estoque, minimo, COALESCE(valor, 0) AS valor, empresa_id, criado_em
     FROM produtos
     WHERE empresa_id = $1
     ORDER BY id DESC
@@ -27,7 +27,7 @@ export async function findAllProdutos(empresaId) {
 export async function findProdutoById(id, empresaId) {
   const result = await pool.query(
     `
-    SELECT id, nome, estoque, minimo, empresa_id
+    SELECT id, nome, estoque, minimo, COALESCE(valor, 0) AS valor, empresa_id
     FROM produtos
     WHERE id = $1
       AND empresa_id = $2
@@ -47,7 +47,7 @@ export async function createProduto(data, empresaId) {
     throw new Error("empresaId é obrigatório em createProduto");
   }
 
-  const { nome, estoque = 0, minimo = 0 } = data;
+  const { nome, estoque = 0, minimo = 0, valor = 0 } = data;
 
   if (!nome) {
     throw new Error("nome é obrigatório");
@@ -55,11 +55,11 @@ export async function createProduto(data, empresaId) {
 
   const result = await pool.query(
     `
-    INSERT INTO produtos (nome, estoque, minimo, empresa_id)
-    VALUES ($1, $2, $3, $4)
-    RETURNING id, nome, estoque, minimo, empresa_id
+    INSERT INTO produtos (nome, estoque, minimo, valor, empresa_id)
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING id, nome, estoque, minimo, COALESCE(valor, 0) AS valor, empresa_id
     `,
-    [nome, estoque, minimo, empresaId]
+    [nome, estoque, minimo, valor, empresaId]
   );
 
   return result.rows[0];
@@ -73,19 +73,20 @@ export async function updateProduto(id, data, empresaId) {
     throw new Error("empresaId é obrigatório em updateProduto");
   }
 
-  const { nome, estoque, minimo } = data;
+  const { nome, estoque, minimo, valor } = data;
 
   const result = await pool.query(
     `
     UPDATE produtos
-    SET nome = COALESCE($1, nome),
+    SET nome    = COALESCE($1, nome),
         estoque = COALESCE($2, estoque),
-        minimo = COALESCE($3, minimo)
-    WHERE id = $4
-      AND empresa_id = $5
-    RETURNING id, nome, estoque, minimo, empresa_id
+        minimo  = COALESCE($3, minimo),
+        valor   = COALESCE($4, valor)
+    WHERE id = $5
+      AND empresa_id = $6
+    RETURNING id, nome, estoque, minimo, COALESCE(valor,0) AS valor, empresa_id
     `,
-    [nome, estoque, minimo, id, empresaId]
+    [nome, estoque, minimo, valor, id, empresaId]
   );
 
   if (result.rowCount === 0) {
