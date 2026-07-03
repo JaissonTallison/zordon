@@ -3,18 +3,18 @@ export default function UserInfo() {
   const initials = user?.nome?.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() || "ZD";
 
   const roleColor = user?.role === "ADMIN"
-    ? { text: "#818CF8", bg: "rgba(129,140,248,0.08)", border: "rgba(129,140,248,0.2)" }
-    : { text: "#34D399",  bg: "rgba(52,211,153,0.08)",  border: "rgba(52,211,153,0.2)"  };
+    ? { text: "#4F46E5", bg: "rgba(79,70,229,0.08)", border: "rgba(79,70,229,0.2)" }
+    : { text: "#047857",  bg: "rgba(52,211,153,0.08)",  border: "rgba(52,211,153,0.2)"  };
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
       {/* STATUS */}
       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
         <span className="status-dot status-dot-active" />
-        <span style={{ fontSize: "11px", color: "#52525B" }}>sistema ativo</span>
+        <span style={{ fontSize: "11px", color: "#64748B" }}>sistema ativo</span>
       </div>
 
-      <div style={{ width: "1px", height: "18px", background: "#3D3D44" }} />
+      <div style={{ width: "1px", height: "18px", background: "rgba(0,0,0,0.08)" }} />
 
       {/* USER CHIP */}
       <div style={{
@@ -24,7 +24,7 @@ export default function UserInfo() {
       }}>
         <div style={{
           width: "26px", height: "26px", borderRadius: "6px",
-          background: "rgba(255,255,255,0.06)",
+          background: "rgba(15,23,42,0.05)",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: "11px", fontWeight: 600, color: roleColor.text,
           fontFamily: "'JetBrains Mono', monospace",
@@ -32,7 +32,7 @@ export default function UserInfo() {
           {initials}
         </div>
         <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-          <span style={{ fontSize: "12px", fontWeight: 500, color: "#F4F4F5", maxWidth: "100px", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+          <span style={{ fontSize: "12px", fontWeight: 500, color: "#0F172A", maxWidth: "100px", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
             {user?.nome || "Usuário"}
           </span>
           <span style={{ fontSize: "10px", color: roleColor.text }}>

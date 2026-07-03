@@ -53,7 +53,9 @@ export async function obterResultados(req, res) {
       });
     }
 
-    const resultados = await listarResultados(empresaId);
+    const { status, prioridade, codigo } = req.query;
+
+    const resultados = await listarResultados(empresaId, { status, prioridade, codigo });
 
     return res.json(resultados);
 
@@ -184,7 +186,7 @@ export async function atualizarStatusDecision(req, res) {
   try {
     const empresaId = req.user?.empresa_id;
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, acao } = req.body;
 
     if (!empresaId) {
       return res.status(400).json({
@@ -204,10 +206,10 @@ export async function atualizarStatusDecision(req, res) {
       });
     }
 
-    await atualizarStatusRepository(id, status, empresaId);
+    await atualizarStatusRepository(id, status, empresaId, acao);
 
     // Notificar clientes via WebSocket
-    try { emitirStatusAtualizado(empresaId, { id, status }); } catch {}
+    try { emitirStatusAtualizado(empresaId, { id, status, acao }); } catch {}
 
     return res.json({
       sucesso: true

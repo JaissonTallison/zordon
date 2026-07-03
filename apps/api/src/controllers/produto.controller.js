@@ -18,7 +18,9 @@ export async function getProdutos(req, res) {
       });
     }
 
-    const produtos = await findAllProdutos(empresaId);
+    const { search } = req.query;
+
+    const produtos = await findAllProdutos(empresaId, search);
 
     return res.json(produtos);
   } catch (err) {

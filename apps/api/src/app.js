@@ -12,6 +12,7 @@ import decisionRoutes from "./routes/decision.routes.js";
 import { autenticar } from "./middlewares/auth.middleware.js";
 import resultadosRoutes from "./routes/resultados.routes.js";
 import regrasRoutes from "./routes/regras.routes.js";
+import empresaRoutes from "./routes/empresa.routes.js";
 
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use("/api/produtos", autenticar, produtosRoutes);
 app.use("/api/decisions", autenticar, decisionRoutes);
 app.use("/api/resultados", autenticar, resultadosRoutes);
 app.use("/api/regras",    autenticar, regrasRoutes);
+app.use("/api/empresa",   autenticar, empresaRoutes);
 
 // health check
 app.get("/", (req, res) => {

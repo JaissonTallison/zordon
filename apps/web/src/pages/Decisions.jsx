@@ -1,39 +1,71 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, TrendingUp, Eye, Flame, CheckCircle, XCircle } from "lucide-react";
+import { AlertTriangle, TrendingUp, Eye, XCircle, RotateCcw } from "lucide-react";
 import api from "../services/api";
+import ResolverMenu, { acaoLabel } from "../components/decision/ResolverMenu";
 
 const C = {
-  card:      "#10141F",
-  cardHover: "#181E2E",
-  border:    "rgba(255,255,255,0.07)",
-  borderHi:  "rgba(0,133,226,0.2)",
-  t1:        "#F0F4FF",
-  t2:        "#9BA8C0",
-  t3:        "#5A6480",
-  t4:        "#2E3550",
-  red:       "#F87171",
-  amber:     "#FBBF24",
-  green:     "#34D399",
+  card:      "#FFFFFF",
+  card2:     "#F8FAFC",
+  cardHover: "#F1F5F9",
+  border:    "rgba(15,23,42,0.05)",
+  borderHi:  "rgba(0,133,226,0.25)",
+  t1:        "#0F172A",
+  t2:        "#475569",
+  t3:        "#64748B",
+  t4:        "#94A3B8",
+  red:       "#DC2626",
+  amber:     "#B45309",
+  green:     "#047857",
   brand:     "#0085E2",
   brandLt:   "#38BDFF",
   brandBg:   "rgba(0,133,226,0.1)",
   brandBdr:  "rgba(0,133,226,0.35)",
+  radius:    "18px",
+  radiusSm:  "12px",
+  shadow:    "0 1px 2px rgba(15,23,42,0.04), 0 10px 24px rgba(15,23,42,0.06)",
 };
 
 const TIPO = {
-  problema:     { label: "Problema",     color: C.red,    bg: "rgba(248,113,113,0.05)", border: "rgba(248,113,113,0.18)", icon: AlertTriangle },
-  oportunidade: { label: "Oportunidade", color: C.green,  bg: "rgba(52,211,153,0.05)",  border: "rgba(52,211,153,0.18)",  icon: TrendingUp    },
-  alerta:       { label: "Alerta",       color: C.amber,  bg: "rgba(251,191,36,0.05)",  border: "rgba(251,191,36,0.18)",  icon: Eye           },
+  problema:     { label: "Problema",     color: C.red,    icon: AlertTriangle },
+  oportunidade: { label: "Oportunidade", color: C.green,  icon: TrendingUp    },
+  alerta:       { label: "Alerta",       color: C.amber,  icon: Eye           },
 };
 
 const PRI = {
-  CRITICA: { label: "CRÍTICA", color: C.red,    bg: "rgba(248,113,113,0.1)"  },
-  ALTA:    { label: "ALTA",    color: C.amber,  bg: "rgba(251,191,36,0.1)"   },
-  MEDIA:   { label: "MÉDIA",   color: C.brandLt,bg: "rgba(56,189,255,0.1)"   },
-  BAIXA:   { label: "BAIXA",   color: C.t3,     bg: "rgba(90,100,128,0.1)"   },
+  CRITICA: { label: "Crítica", color: C.red    },
+  ALTA:    { label: "Alta",    color: C.amber  },
+  MEDIA:   { label: "Média",   color: C.brand  },
+  BAIXA:   { label: "Baixa",   color: C.t3     },
 };
 
 function fmt(v) { return Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+// Descrições da engine repetem nome do produto e valor de impacto, que já
+// aparecem em destaque na linha — removemos essa redundância aqui.
+function cleanDescricao(descricao, nome, valorFormatado) {
+  if (!descricao) return "";
+  let s = descricao.trim();
+
+  if (nome && s.toLowerCase().startsWith(nome.trim().toLowerCase())) {
+    s = s.slice(nome.trim().length).trim();
+  }
+
+  if (valorFormatado) {
+    const money = `R\\$\\s*${valorFormatado.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`;
+    const re = new RegExp(`\\s*(com|de|em)?\\s*${money}(\\s+(em|de)\\s+\\w+(\\s+\\w+)?)?`, "i");
+    const stripped = s.replace(re, " ").replace(/\s{2,}/g, " ").trim();
+    if (stripped) s = stripped;
+  }
+
+  for (let i = 0; i < 2; i++) {
+    const next = s.replace(/^(está|apresenta|com|possui)\s+/i, "");
+    if (next === s) break;
+    s = next;
+  }
+  if (s) s = s.charAt(0).toUpperCase() + s.slice(1);
+
+  return s || descricao;
+}
 
 export default function Decisions() {
   const [data, setData]       = useState(null);
@@ -47,82 +79,44 @@ export default function Decisions() {
 
   useEffect(() => { load(); }, []);
 
-  async function atualizarStatus(id, status) {
+  async function atualizarStatus(id, status, acao) {
     try {
-      await api.patch(`/engine/status/${id}`, { status });
+      await api.patch(`/engine/status/${id}`, { status, acao });
       setData((prev) => {
         if (!prev) return prev;
-        const upd = (list) => list.map((d) => d.id === id ? { ...d, status } : d);
+        const upd = (list) => list.map((d) => d.id === id ? { ...d, status, acao_aplicada: acao || d.acao_aplicada } : d);
         return { ...prev, decisoes: { problemas: upd(prev.decisoes.problemas), oportunidades: upd(prev.decisoes.oportunidades), alertas: upd(prev.decisoes.alertas) } };
       });
     } catch { load(); }
   }
 
   if (loading) return <Spinner label="Carregando decisões..." />;
-  if (!data)   return <div style={{ color: C.t3 }}>Sem dados</div>;
+  if (!data)   return <div style={{ color: C.t3, fontSize: "15px" }}>Sem dados</div>;
 
-  const { resumo, decisoes } = data;
+  const { decisoes } = data;
   const all = [
     ...decisoes.problemas.map((d) => ({ ...d, _tipo: "problema" })),
     ...decisoes.oportunidades.map((d) => ({ ...d, _tipo: "oportunidade" })),
     ...decisoes.alertas.map((d) => ({ ...d, _tipo: "alerta" })),
   ].sort((a, b) => Number(b.impacto_valor || 0) - Number(a.impacto_valor || 0));
 
-  const top3      = all.slice(0, 3);
   const maxImpact = Math.max(...all.map((d) => Number(d.impacto_valor || 0)), 1);
   const filtered  = filter === "all" ? all : all.filter((d) => d._tipo === filter);
+  const pendentes = all.filter((d) => !d.status || d.status === "PENDENTE").length;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px", animation: "fade-in-up 0.35s ease-out" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "22px", animation: "fade-in-up 0.35s ease-out" }}>
 
-      {/* KPI */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "12px" }}>
-        {[
-          { label: "Impacto total",  value: `R$ ${fmt(resumo.impacto_total)}`, accent: C.amber,  mono: true },
-          { label: "Problemas",      value: resumo.problemas,                   accent: C.red              },
-          { label: "Oportunidades",  value: resumo.oportunidades,               accent: C.green            },
-          { label: "Alertas",        value: resumo.alertas,                     accent: C.brand            },
-        ].map((k) => (
-          <div key={k.label} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: "10px", padding: "16px 18px", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: k.accent, opacity: 0.5 }} />
-            <p style={{ fontSize: "10px", color: C.t3, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "6px" }}>{k.label}</p>
-            <p style={{ fontSize: "22px", fontWeight: 700, color: k.accent, fontFamily: k.mono ? "'JetBrains Mono',monospace" : "inherit" }}>{k.value}</p>
-          </div>
-        ))}
+      {/* HEADER */}
+      <div>
+        <h2 style={{ fontSize: "18px", fontWeight: 700, color: C.t1, letterSpacing: "-0.01em" }}>Fila de decisões</h2>
+        <p style={{ fontSize: "13px", color: C.t3, marginTop: "4px" }}>
+          {pendentes} pendente{pendentes !== 1 ? "s" : ""} de {all.length} — ordenadas por impacto financeiro
+        </p>
       </div>
 
-      {/* TOP 3 */}
-      {top3.length > 0 && (
-        <div style={{ background: C.card, border: "1px solid rgba(251,191,36,0.2)", borderRadius: "12px", padding: "18px 22px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
-            <Flame size={14} color={C.amber} />
-            <span style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: C.amber }}>Ações prioritárias agora</span>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {top3.map((d, i) => {
-              const cfg = TIPO[d._tipo] || TIPO.alerta;
-              const pct = Math.min((Number(d.impacto_valor || 0) / maxImpact) * 100, 100);
-              return (
-                <div key={d.id} style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                  <span style={{ fontSize: "11px", fontFamily: "'JetBrains Mono',monospace", color: C.t4, width: "20px", textAlign: "right" }}>#{i + 1}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                      <span style={{ fontSize: "13px", color: C.t1, fontWeight: 500 }}>{d.produto_nome || d.codigo}</span>
-                      <span style={{ fontSize: "13px", fontWeight: 700, color: cfg.color, fontFamily: "'JetBrains Mono',monospace" }}>R$ {fmt(d.impacto_valor)}</span>
-                    </div>
-                    <div style={{ height: "3px", background: "rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden" }}>
-                      <div className="progress-bar" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${cfg.color}50, ${cfg.color})` }} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* FILTER TABS */}
-      <div style={{ display: "flex", gap: "6px" }}>
+      <div style={{ display: "flex", gap: "8px" }}>
         {[
           { id: "all",          label: `Todos (${all.length})`                              },
           { id: "problema",     label: `Problemas (${decisoes.problemas.length})`           },
@@ -130,66 +124,87 @@ export default function Decisions() {
           { id: "alerta",       label: `Alertas (${decisoes.alertas.length})`               },
         ].map((t) => (
           <button key={t.id} onClick={() => setFilter(t.id)} style={{
-            padding: "6px 14px", borderRadius: "6px", fontSize: "12px", cursor: "pointer",
-            fontFamily: "inherit", transition: "all 0.15s",
-            background: filter === t.id ? C.brandBg  : "rgba(16,20,31,0.8)",
-            border:     filter === t.id ? `1px solid ${C.brandBdr}` : `1px solid ${C.border}`,
+            padding: "8px 16px", borderRadius: "20px", fontSize: "13px", fontWeight: 600, cursor: "pointer",
+            fontFamily: "inherit", transition: "all 0.15s", border: "none",
+            background: filter === t.id ? C.brandBg  : C.card2,
             color:      filter === t.id ? C.brand : C.t3,
           }}>{t.label}</button>
         ))}
       </div>
 
       {/* FEED */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        {filtered.length === 0 && (
-          <div style={{ textAlign: "center", padding: "40px", color: C.t4, fontFamily: "'JetBrains Mono',monospace", fontSize: "13px" }}>
-            Nenhuma decisão nesta categoria
-          </div>
-        )}
-        {filtered.map((d, i) => <DecisionCard key={d.id || i} item={d} tipo={d._tipo} atualizar={atualizarStatus} max={maxImpact} />)}
-      </div>
+      {filtered.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "50px", color: C.t3, background: C.card, borderRadius: C.radius, boxShadow: C.shadow, fontSize: "14px" }}>
+          Nenhuma decisão nesta categoria
+        </div>
+      ) : (
+        <div style={{ background: C.card, borderRadius: C.radius, boxShadow: C.shadow, overflow: "visible" }}>
+          {filtered.map((d, i) => (
+            <DecisionCard key={d.id || i} item={d} tipo={d._tipo} atualizar={atualizarStatus} max={maxImpact} isFirst={i === 0} isLast={i === filtered.length - 1} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function DecisionCard({ item, tipo, atualizar, max }) {
+function DecisionCard({ item, tipo, atualizar, max, isFirst, isLast }) {
   const cfg   = TIPO[tipo] || TIPO.alerta;
   const Icon  = cfg.icon;
   const pri   = PRI[item.prioridade] || PRI.MEDIA;
   const pct   = Math.min((Number(item.impacto_valor || 0) / max) * 100, 100);
   const done  = item.status === "RESOLVIDO" || item.status === "IGNORADO";
+  const nome  = item.produto_nome || item.codigo;
+  const desc  = cleanDescricao(item.titulo_amigavel || item.descricao, nome, fmt(item.impacto_valor));
 
   return (
     <div
-      style={{ background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${cfg.color}`, borderRadius: "9px", padding: "12px 16px", opacity: done ? 0.4 : 1, transition: "all 0.15s" }}
-      onMouseEnter={(e) => { if (!done) { e.currentTarget.style.background = C.cardHover; e.currentTarget.style.borderColor = C.borderHi; }}}
-      onMouseLeave={(e) => { e.currentTarget.style.background = C.card; e.currentTarget.style.borderColor = C.border; }}
+      style={{
+        display: "flex", alignItems: "flex-start", gap: "14px",
+        padding: "16px 22px",
+        borderBottom: isLast ? "none" : `1px solid ${C.border}`,
+        borderTopLeftRadius: isFirst ? C.radius : 0, borderTopRightRadius: isFirst ? C.radius : 0,
+        borderBottomLeftRadius: isLast ? C.radius : 0, borderBottomRightRadius: isLast ? C.radius : 0,
+        opacity: done ? 0.45 : 1, transition: "all 0.15s",
+      }}
+      onMouseEnter={(e) => { if (!done) e.currentTarget.style.background = C.cardHover; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
     >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-        <div style={{ width: "30px", height: "30px", borderRadius: "7px", flexShrink: 0, background: `${cfg.color}10`, border: `1px solid ${cfg.color}20`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Icon size={13} color={cfg.color} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px", flexWrap: "wrap" }}>
-            <span style={{ fontSize: "13px", fontWeight: 500, color: C.t1 }}>{item.produto_nome || item.codigo}</span>
-            <span style={{ fontSize: "10px", padding: "1px 7px", borderRadius: "20px", background: pri.bg, color: pri.color, fontFamily: "'JetBrains Mono',monospace", letterSpacing: "0.06em" }}>{pri.label}</span>
-            {done && <span style={{ fontSize: "10px", padding: "1px 7px", borderRadius: "20px", background: item.status === "RESOLVIDO" ? "rgba(52,211,153,0.1)" : "rgba(90,100,128,0.1)", color: item.status === "RESOLVIDO" ? C.green : C.t3, fontFamily: "'JetBrains Mono',monospace" }}>{item.status}</span>}
-          </div>
-          <p style={{ fontSize: "12px", color: C.t3, lineHeight: 1.4 }}>{item.titulo_amigavel || item.descricao}</p>
-          {item.mensagem_recorrencia && <p style={{ fontSize: "11px", color: C.red, marginTop: "3px" }}>↻ {item.mensagem_recorrencia}</p>}
-          <div style={{ marginTop: "8px", height: "3px", background: "rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden" }}>
-            <div className="progress-bar" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${cfg.color}50, ${cfg.color})` }} />
-          </div>
-        </div>
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <p style={{ fontSize: "15px", fontWeight: 700, color: cfg.color, fontFamily: "'JetBrains Mono',monospace" }}>R$ {fmt(item.impacto_valor)}</p>
-          {!done && (
-            <div style={{ display: "flex", gap: "5px", marginTop: "7px", justifyContent: "flex-end" }}>
-              <button className="btn-success" onClick={() => atualizar(item.id, "RESOLVIDO")}><CheckCircle size={11} /> Resolver</button>
-              <button className="btn-danger"  onClick={() => atualizar(item.id, "IGNORADO")}><XCircle size={11} /> Ignorar</button>
-            </div>
+      <div style={{ width: "38px", height: "38px", borderRadius: C.radiusSm, flexShrink: 0, background: `${cfg.color}12`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon size={17} color={cfg.color} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px", flexWrap: "wrap" }}>
+          <span style={{ fontSize: "15px", fontWeight: 600, color: C.t1 }}>{nome}</span>
+          <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 9px", borderRadius: "20px", background: `${pri.color}12`, color: pri.color }}>{pri.label}</span>
+          {done && (
+            <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 9px", borderRadius: "20px", background: item.status === "RESOLVIDO" ? "rgba(4,120,87,0.1)" : "rgba(100,116,139,0.1)", color: item.status === "RESOLVIDO" ? C.green : C.t3 }}>
+              {item.status === "RESOLVIDO" ? (acaoLabel(item.acao_aplicada) || "Resolvido") : "Ignorado"}
+            </span>
           )}
         </div>
+        <p style={{ fontSize: "13px", color: C.t3, lineHeight: 1.4 }}>{desc}</p>
+        {item.mensagem_recorrencia && (
+          <p style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "12px", color: C.red, marginTop: "4px" }}>
+            <RotateCcw size={11} strokeWidth={2} style={{ flexShrink: 0 }} />
+            {item.mensagem_recorrencia}
+          </p>
+        )}
+        <div style={{ marginTop: "9px", height: "4px", background: "rgba(15,23,42,0.06)", borderRadius: "2px", overflow: "hidden", maxWidth: "260px" }}>
+          <div className="progress-bar" style={{ width: `${pct}%`, background: cfg.color }} />
+        </div>
+      </div>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <p style={{ fontSize: "16px", fontWeight: 700, color: C.t1, letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>R$ {fmt(item.impacto_valor)}</p>
+        {!done && (
+          <div style={{ display: "flex", gap: "6px", marginTop: "8px", justifyContent: "flex-end" }}>
+            <ResolverMenu size="sm" onResolver={(acao) => atualizar(item.id, "RESOLVIDO", acao)} />
+            <button
+              onClick={() => atualizar(item.id, "IGNORADO")}
+              style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", fontWeight: 600, color: C.red, background: "rgba(220,38,38,0.08)", border: "none", borderRadius: "20px", padding: "5px 12px", cursor: "pointer", fontFamily: "inherit" }}
+            ><XCircle size={12} /> Ignorar</button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -197,8 +212,8 @@ function DecisionCard({ item, tipo, atualizar, max }) {
 
 function Spinner({ label }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "50vh", color: C.t3, fontFamily: "'JetBrains Mono',monospace", fontSize: "13px", gap: "10px" }}>
-      <div style={{ width: "16px", height: "16px", border: "2px solid rgba(0,133,226,0.15)", borderTopColor: "#0085E2", borderRadius: "50%", animation: "spin-slow 0.8s linear infinite" }} />
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "50vh", color: C.t3, fontSize: "15px", gap: "10px" }}>
+      <div style={{ width: "18px", height: "18px", border: "2px solid rgba(0,133,226,0.15)", borderTopColor: "#0085E2", borderRadius: "50%", animation: "spin-slow 0.8s linear infinite" }} />
       {label}
     </div>
   );

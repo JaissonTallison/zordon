@@ -8,8 +8,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 // ── Menu items ──────────────────────────────────────────────
 const MENU = [
   { id: "home",       icon: LayoutDashboard, path: "/",             label: "Dashboard",  sub: "Visão geral"        },
-  { id: "decisions",  icon: Bolt,            path: "/decisions",    label: "Decisões",   sub: "Ações prioritárias", badge: { text: "LIVE", color: "#34D399" } },
-  { id: "inteligencia",icon: BrainCircuit,   path: "/inteligencia", label: "Inteligência",sub: "Engine analítica",  badge: { text: "IA", color: "#0085E2"  } },
+  { id: "decisions",  icon: Bolt,            path: "/decisions",    label: "Decisões",   sub: "Ações prioritárias" },
+  { id: "inteligencia",icon: BrainCircuit,   path: "/inteligencia", label: "Inteligência",sub: "Engine analítica"  },
   { id: "produtos",   icon: Boxes,           path: "/produtos",     label: "Produtos",   sub: "Estoque & inventário" },
   { id: "impacto",    icon: TrendingUp,      path: "/impacto",      label: "Impacto",    sub: "Análise financeira"  },
   { id: "regras",     icon: SlidersVertical, path: "/regras",       label: "Regras",     sub: "Motor de regras"    },
@@ -18,23 +18,23 @@ const MENU = [
 
 // ── Palette ─────────────────────────────────────────────────
 const C = {
-  bg:         "#080A13",
-  border:     "rgba(255,255,255,0.07)",
+  bg:         "#FFFFFF",
+  border:     "rgba(0,0,0,0.08)",
   brand:      "#0085E2",
   brandBg:    "rgba(0,133,226,0.08)",
-  brandBdr:   "rgba(0,133,226,0.2)",
+  brandBdr:   "rgba(0,133,226,0.25)",
   brandGlow:  "rgba(0,133,226,0.35)",
   brandLight: "#38BDFF",
-  text1:      "#F0F4FF",
-  text2:      "#9BA8C0",
-  text3:      "#5A6480",
-  text4:      "#2E3550",
+  text1:      "#0F172A",
+  text2:      "#475569",
+  text3:      "#64748B",
+  text4:      "#94A3B8",
   gold:       "#FCD34D",
-  red:        "#F87171",
+  red:        "#DC2626",
 };
 
-const W_OPEN   = 228;
-const W_CLOSED =  64;
+const W_OPEN   = 240;
+const W_CLOSED =  68;
 const TRANS    = "all 0.32s cubic-bezier(0.4,0,0.2,1)";
 
 // ── Tooltip ─────────────────────────────────────────────────
@@ -49,18 +49,18 @@ function Tooltip({ label, sub, visible }) {
       zIndex: 999, whiteSpace: "nowrap",
     }}>
       <div style={{
-        background: "#10141F",
+        background: "#FFFFFF",
         border: `1px solid ${C.border}`,
-        borderRadius: "8px", padding: "7px 12px",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+        borderRadius: "10px", padding: "8px 13px",
+        boxShadow: "0 8px 24px rgba(15,23,42,0.15)",
       }}>
-        <div style={{ fontSize: "12px", fontWeight: 600, color: C.text1 }}>{label}</div>
-        {sub && <div style={{ fontSize: "10px", color: C.text3, marginTop: "1px" }}>{sub}</div>}
+        <div style={{ fontSize: "13px", fontWeight: 600, color: C.text1 }}>{label}</div>
+        {sub && <div style={{ fontSize: "11px", color: C.text3, marginTop: "1px" }}>{sub}</div>}
         <div style={{
           position: "absolute", left: "-5px", top: "50%",
           transform: "translateY(-50%) rotate(45deg)",
           width: "9px", height: "9px",
-          background: "#10141F",
+          background: "#FFFFFF",
           border: `1px solid ${C.border}`,
           borderRight: "none", borderTop: "none",
         }} />
@@ -85,49 +85,30 @@ function MenuItem({ item, isActive, collapsed, onClick }) {
         style={{
           position: "relative", width: "100%",
           display: "flex", alignItems: "center",
-          gap: collapsed ? 0 : "11px",
+          gap: collapsed ? 0 : "12px",
           justifyContent: collapsed ? "center" : "flex-start",
-          padding: collapsed ? "10px 0" : "9px 12px",
-          borderRadius: "10px", border: "none",
+          padding: collapsed ? "11px 0" : "10px 14px",
+          borderRadius: "14px", border: "none",
           cursor: "pointer", textAlign: "left",
           outline: "none", overflow: "hidden",
           transition: TRANS,
-          background: isActive ? C.brandBg : hover ? "rgba(255,255,255,0.04)" : "transparent",
+          background: isActive ? C.brandBg : hover ? "rgba(15,23,42,0.04)" : "transparent",
         }}
       >
-        {/* Active left bar */}
-        <div style={{
-          position: "absolute", left: 0, top: "50%",
-          transform: `translateY(-50%) scaleY(${isActive ? 1 : 0})`,
-          width: "3px", height: "22px",
-          borderRadius: "0 3px 3px 0",
-          background: `linear-gradient(180deg, ${C.brandLight}, ${C.brand})`,
-          boxShadow: isActive ? `0 0 10px ${C.brandGlow}` : "none",
-          transition: TRANS,
-        }} />
-
-        {/* Icon box */}
+        {/* Icon box — carrega a cor do item, sem barra de destaque */}
         <div style={{
           position: "relative",
-          width: "34px", height: "34px", flexShrink: 0,
+          width: "36px", height: "36px", flexShrink: 0,
           display: "flex", alignItems: "center", justifyContent: "center",
-          borderRadius: "9px",
-          background: isActive ? "rgba(0,133,226,0.12)" : hover ? "rgba(255,255,255,0.05)" : "transparent",
-          border: isActive ? `1px solid ${C.brandBdr}` : "1px solid transparent",
+          borderRadius: "12px",
+          background: isActive ? "rgba(0,133,226,0.12)" : hover ? "rgba(15,23,42,0.04)" : "transparent",
           transition: TRANS,
         }}>
           <Icon
-            size={16} strokeWidth={isActive ? 2.2 : 1.7}
+            size={17} strokeWidth={isActive ? 2.1 : 1.8}
             color={isActive ? C.brand : hover ? C.text2 : C.text3}
             style={{ transition: "color 0.2s" }}
           />
-          {isActive && (
-            <div style={{
-              position: "absolute", inset: -4,
-              background: "radial-gradient(circle, rgba(0,133,226,0.18) 0%, transparent 70%)",
-              borderRadius: "50%", pointerEvents: "none",
-            }} />
-          )}
         </div>
 
         {/* Label + sub */}
@@ -138,47 +119,22 @@ function MenuItem({ item, isActive, collapsed, onClick }) {
           overflow: "hidden", transition: TRANS,
           display: "flex", flexDirection: "column", gap: "1px",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{
-              fontSize: "13px",
-              fontWeight: isActive ? 600 : 400,
-              color: isActive ? C.text1 : hover ? C.text2 : C.text3,
-              whiteSpace: "nowrap", transition: "color 0.2s",
-            }}>
-              {item.label}
-            </span>
-            {item.badge && (
-              <span style={{
-                fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em",
-                padding: "1px 5px", borderRadius: "20px",
-                background: `${item.badge.color}15`,
-                color: item.badge.color,
-                border: `1px solid ${item.badge.color}30`,
-                fontFamily: "'JetBrains Mono', monospace",
-              }}>
-                {item.badge.text}
-              </span>
-            )}
-          </div>
           <span style={{
-            fontSize: "10px",
-            color: isActive ? "rgba(0,133,226,0.7)" : C.text4,
+            fontSize: "14px",
+            fontWeight: isActive ? 600 : 500,
+            color: isActive ? C.text1 : hover ? C.text2 : C.text3,
+            whiteSpace: "nowrap", transition: "color 0.2s",
+          }}>
+            {item.label}
+          </span>
+          <span style={{
+            fontSize: "12px",
+            color: isActive ? "rgba(0,133,226,0.75)" : C.text4,
             whiteSpace: "nowrap", transition: "color 0.2s",
           }}>
             {item.sub}
           </span>
         </div>
-
-        {/* Active dot */}
-        {!collapsed && isActive && (
-          <div style={{
-            width: "5px", height: "5px", borderRadius: "50%",
-            background: C.brand,
-            boxShadow: `0 0 8px ${C.brandGlow}`,
-            flexShrink: 0,
-            animation: "pulse-brand 2s ease-in-out infinite",
-          }} />
-        )}
       </button>
 
       {collapsed && <Tooltip label={item.label} sub={item.sub} visible={hover} />}
@@ -208,7 +164,7 @@ export default function NavigationRail() {
       justifyContent: "space-between",
       background: C.bg,
       borderRight: `1px solid ${C.border}`,
-      padding:    collapsed ? "16px 8px" : "16px 10px",
+      padding:    collapsed ? "18px 10px" : "18px 12px",
       position:   "relative", overflow: "hidden",
       transition: TRANS, zIndex: 50,
     }}>
@@ -225,18 +181,18 @@ export default function NavigationRail() {
       }} />
 
       {/* ── TOP ── */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
 
         {/* Logo row */}
         <div style={{
           display: "flex", alignItems: "center",
           justifyContent: collapsed ? "center" : "space-between",
-          padding: collapsed ? "6px 0 18px" : "6px 4px 18px",
+          padding: collapsed ? "6px 0 20px" : "6px 4px 20px",
           gap: "8px",
         }}>
           <div
             onClick={() => setCollapsed(!collapsed)}
-            style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", flexShrink: 0 }}
+            style={{ display: "flex", alignItems: "center", gap: collapsed ? 0 : "11px", cursor: "pointer", flexShrink: 0 }}
           >
             <div style={{
               position: "relative",
@@ -258,24 +214,20 @@ export default function NavigationRail() {
             <div style={{
               overflow: "hidden",
               opacity: collapsed ? 0 : 1,
-              maxWidth: collapsed ? 0 : "120px",
+              maxWidth: collapsed ? 0 : "160px",
               transition: TRANS,
             }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "5px" }}>
-                <span style={{
-                  fontSize: "14px", fontWeight: 700,
-                  color: C.text1, letterSpacing: "0.08em", whiteSpace: "nowrap",
-                }}>
-                  ZORDON
-                </span>
-                <span style={{
-                  fontSize: "9px", fontWeight: 800, letterSpacing: "0.18em",
-                  background: "linear-gradient(90deg, #D97706, #FCD34D, #D97706)",
-                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-                  whiteSpace: "nowrap", fontFamily: "'JetBrains Mono', monospace",
-                }}>
-                  PRO
-                </span>
+              <div style={{
+                fontSize: "16px", fontWeight: 700,
+                color: C.text1, letterSpacing: "0.01em", whiteSpace: "nowrap", lineHeight: 1.2,
+              }}>
+                ZORDON
+              </div>
+              <div style={{
+                fontSize: "10px", fontWeight: 600,
+                color: C.text4, letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap",
+              }}>
+                Intelligence Platform
               </div>
             </div>
           </div>
@@ -286,7 +238,7 @@ export default function NavigationRail() {
               onMouseEnter={() => setHoverToggle(true)}
               onMouseLeave={() => setHoverToggle(false)}
               style={{
-                width: "26px", height: "26px", borderRadius: "7px",
+                width: "28px", height: "28px", borderRadius: "9px",
                 border: `1px solid ${hoverToggle ? C.brandBdr : C.border}`,
                 background: hoverToggle ? C.brandBg : "transparent",
                 color: hoverToggle ? C.brand : C.text4,
@@ -295,7 +247,7 @@ export default function NavigationRail() {
                 transition: "all 0.2s", flexShrink: 0,
               }}
             >
-              <ChevronLeft size={13} strokeWidth={2.5} />
+              <ChevronLeft size={14} strokeWidth={2.5} />
             </button>
           )}
         </div>
@@ -304,28 +256,11 @@ export default function NavigationRail() {
         <div style={{
           height: "1px",
           background: `linear-gradient(90deg, transparent, ${C.border}, transparent)`,
-          margin: "0 4px 10px",
+          margin: "0 4px 16px",
         }} />
 
-        {/* Nav label */}
-        <div style={{
-          display: "flex", alignItems: "center",
-          padding: collapsed ? "0" : "0 6px",
-          marginBottom: "6px",
-          justifyContent: collapsed ? "center" : "flex-start",
-          overflow: "hidden",
-        }}>
-          {collapsed ? (
-            <div style={{ width: "20px", height: "1px", background: C.text4, borderRadius: "1px" }} />
-          ) : (
-            <span style={{ fontSize: "9px", color: C.text4, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600 }}>
-              Navegação
-            </span>
-          )}
-        </div>
-
         {/* Menu */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
           {MENU.map((item) => (
             <MenuItem
               key={item.id}
@@ -343,17 +278,17 @@ export default function NavigationRail() {
         <div style={{
           height: "1px",
           background: `linear-gradient(90deg, transparent, ${C.border}, transparent)`,
-          margin: "10px 4px 8px",
+          margin: "12px 4px 10px",
         }} />
 
         {collapsed ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "9px" }}>
             <button
               onClick={() => setCollapsed(false)}
               style={{
                 width: "100%",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                padding: "8px 0", borderRadius: "10px",
+                padding: "9px 0", borderRadius: "12px",
                 border: `1px solid ${C.border}`,
                 background: "transparent", color: C.text3,
                 cursor: "pointer", transition: "all 0.2s",
@@ -369,41 +304,30 @@ export default function NavigationRail() {
                 e.currentTarget.style.color = C.text3;
               }}
             >
-              <ChevronLeft size={13} strokeWidth={2.2} style={{ transform: "rotate(180deg)" }} />
+              <ChevronLeft size={14} strokeWidth={2.2} style={{ transform: "rotate(180deg)" }} />
             </button>
-            <span style={{ fontSize: "9px", color: C.text4, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.04em" }}>
+            <span style={{ fontSize: "10px", color: C.text4, fontFamily: "'JetBrains Mono', monospace" }}>
               v2.0
             </span>
           </div>
         ) : (
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "6px 8px", borderRadius: "8px",
-            background: "rgba(255,255,255,0.02)",
-            border: `1px solid ${C.border}`,
+            padding: "10px 14px", borderRadius: "12px",
+            background: "rgba(15,23,42,0.03)",
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <div style={{
-                width: "5px", height: "5px", borderRadius: "50%",
-                background: C.brand,
-                boxShadow: `0 0 5px ${C.brandGlow}`,
-                animation: "pulse-brand 2.5s ease-in-out infinite",
-              }} />
-              <span style={{
-                fontSize: "10px", fontWeight: 600, color: C.text3,
-                fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.04em",
-              }}>
-                v2.0.0
-              </span>
-            </div>
             <span style={{
-              fontSize: "9px", padding: "1px 6px", borderRadius: "20px",
-              background: "rgba(0,133,226,0.08)",
-              border: "1px solid rgba(0,133,226,0.2)",
-              color: C.brand,
-              fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.04em",
+              fontSize: "12px", fontWeight: 600, color: C.text3,
+              fontFamily: "'JetBrains Mono', monospace",
             }}>
-              stable
+              v2.0.0
+            </span>
+            <span style={{
+              fontSize: "10px", fontWeight: 700, padding: "3px 10px", borderRadius: "20px",
+              background: "rgba(4,120,87,0.1)",
+              color: "#047857",
+            }}>
+              Stable
             </span>
           </div>
         )}

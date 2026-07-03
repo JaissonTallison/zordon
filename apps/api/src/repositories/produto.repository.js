@@ -3,20 +3,26 @@ import { pool } from "../config/database.js";
 /**
  *  Buscar todos os produtos da empresa
  */
-export async function findAllProdutos(empresaId) {
+export async function findAllProdutos(empresaId, search) {
   if (!empresaId) {
     throw new Error("empresaId é obrigatório em findAllProdutos");
   }
 
-  const result = await pool.query(
-    `
+  const params = [empresaId];
+  let query = `
     SELECT id, nome, estoque, minimo, COALESCE(valor, 0) AS valor, empresa_id, criado_em
     FROM produtos
     WHERE empresa_id = $1
-    ORDER BY id DESC
-    `,
-    [empresaId]
-  );
+  `;
+
+  if (search) {
+    params.push(`%${search}%`);
+    query += ` AND nome ILIKE $${params.length}`;
+  }
+
+  query += ` ORDER BY id DESC`;
+
+  const result = await pool.query(query, params);
 
   return result.rows;
 }
@@ -34,6 +40,24 @@ export async function findProdutoById(id, empresaId) {
     LIMIT 1
     `,
     [id, empresaId]
+  );
+
+  return result.rows[0] || null;
+}
+
+/**
+ *  Buscar produto por nome (case-insensitive) — usado na importação de relatórios
+ */
+export async function findProdutoByNome(nome, empresaId) {
+  const result = await pool.query(
+    `
+    SELECT id, nome, estoque, minimo, COALESCE(valor, 0) AS valor, empresa_id
+    FROM produtos
+    WHERE empresa_id = $1
+      AND LOWER(nome) = LOWER($2)
+    LIMIT 1
+    `,
+    [empresaId, nome]
   );
 
   return result.rows[0] || null;

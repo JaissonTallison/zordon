@@ -1,10 +1,12 @@
 import {
   listarUsuarios,
   atualizarRole,
+  atualizarPerfil,
   removerUsuario
 } from "../repositories/user.management.repository.js";
 
 import { registrarLog } from "../repositories/audit.repository.js";
+import { hashSenha } from "../auth/auth.service.js";
 
 // listar usuários
 export async function listar(req, res) {
@@ -42,6 +44,31 @@ export async function alterarRole(req, res) {
       empresa_id,
       acao: "UPDATE_ROLE",
       descricao: `Usuário ${userId} alterado para ${role}`
+    });
+
+    return res.json(usuario);
+  } catch (err) {
+    return res.status(500).json({ erro: err.message });
+  }
+}
+
+// editar o próprio perfil (nome e/ou senha)
+export async function editarPerfil(req, res) {
+  try {
+    const user_id = req.user.id;
+    const empresa_id = req.user.empresa_id;
+
+    const { nome, senha } = req.body;
+
+    const senhaHash = senha ? await hashSenha(senha) : null;
+
+    const usuario = await atualizarPerfil(user_id, { nome, senha: senhaHash });
+
+    await registrarLog({
+      user_id,
+      empresa_id,
+      acao: "UPDATE_PROFILE",
+      descricao: "Usuário atualizou o próprio perfil"
     });
 
     return res.json(usuario);

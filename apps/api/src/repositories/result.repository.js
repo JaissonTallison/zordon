@@ -134,26 +134,48 @@ export async function salvarResultados(resultados, empresaId) {
 /**
  * Listar histórico (AGORA COM PRODUTO NOME)
  */
-export async function listarResultados(empresaId) {
-  const result = await pool.query(
-    `
-    SELECT 
+export async function listarResultados(empresaId, filtros = {}) {
+  const { status, prioridade, codigo } = filtros;
+
+  const params = [empresaId];
+  let query = `
+    SELECT
       r.id,
       r.codigo,
       r.produto_id,
       p.nome AS produto_nome,
+      r.titulo,
+      r.descricao,
+      r.recomendacao,
       r.impacto_valor,
       r.prioridade,
       r.score,
       r.status,
+      r.acao_aplicada,
       r.gerado_em
     FROM resultados r
     LEFT JOIN produtos p ON p.id = r.produto_id
     WHERE r.empresa_id = $1
-    ORDER BY r.impacto_valor DESC
-    `,
-    [empresaId]
-  );
+  `;
+
+  if (status) {
+    params.push(status);
+    query += ` AND r.status = $${params.length}`;
+  }
+
+  if (prioridade) {
+    params.push(prioridade);
+    query += ` AND r.prioridade = $${params.length}`;
+  }
+
+  if (codigo) {
+    params.push(codigo);
+    query += ` AND r.codigo = $${params.length}`;
+  }
+
+  query += ` ORDER BY r.impacto_valor DESC`;
+
+  const result = await pool.query(query, params);
 
   return result.rows.map(r => ({
     ...r,
@@ -163,17 +185,18 @@ export async function listarResultados(empresaId) {
 }
 
 /**
- * Atualizar status
+ * Atualizar status (e, opcionalmente, qual ação o gestor escolheu aplicar)
  */
-export async function atualizarStatus(id, status, empresaId) {
+export async function atualizarStatus(id, status, empresaId, acao) {
   await pool.query(
     `
     UPDATE resultados
-    SET status = $1
+    SET status = $1,
+        acao_aplicada = COALESCE($4, acao_aplicada)
     WHERE id = $2
       AND empresa_id = $3
     `,
-    [status, id, empresaId]
+    [status, id, empresaId, acao || null]
   );
 }
 

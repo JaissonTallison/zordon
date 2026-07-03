@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 
 import {
   getProdutos,
@@ -6,10 +7,12 @@ import {
   updateProdutoController,
   deleteProdutoController
 } from "../controllers/produto.controller.js";
+import { importarRelatorioController } from "../controllers/importacao.controller.js";
 
 import { autenticar } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 /**
  * Todas as rotas de produtos precisam de autenticação
@@ -21,6 +24,11 @@ router.use(autenticar);
  * LISTAR PRODUTOS
  */
 router.get("/", getProdutos);
+
+/**
+ * IMPORTAR RELATÓRIO (.xlsx, .xls, .csv, .txt) — cria/atualiza produtos e vendas
+ */
+router.post("/importar", upload.single("arquivo"), importarRelatorioController);
 
 /**
  * CRIAR PRODUTO

@@ -30,6 +30,22 @@ export async function atualizarRole(userId, role, empresa_id) {
   return result.rows[0];
 }
 
+//  atualizar o próprio perfil (nome e/ou senha)
+export async function atualizarPerfil(userId, { nome, senha }) {
+  const result = await pool.query(
+    `
+    UPDATE users
+    SET nome  = COALESCE($1, nome),
+        senha = COALESCE($2, senha)
+    WHERE id = $3
+    RETURNING id, nome, email, role, empresa_id
+    `,
+    [nome, senha, userId]
+  );
+
+  return result.rows[0];
+}
+
 //  remover usuário
 export async function removerUsuario(userId, empresa_id) {
   await pool.query(

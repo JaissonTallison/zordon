@@ -18,7 +18,7 @@ export async function processarAlertas(decisions, empresaId) {
       await salvarAlerta(d, empresaId);
 
       // ENVIA NOTIFICAÇÃO (WEBHOOK)
-      await enviarNotificacao(d);
+      await enviarNotificacao(d, empresaId);
 
       // LOG
       console.log(
